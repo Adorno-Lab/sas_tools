@@ -17,14 +17,14 @@ public:
     /**
      * @brief Enumeration of optional driver functionalities in high level mode
      */
-    enum class Mode{
-        Idle=0,
-        Stance,
-        Walking
+    enum class HIGH_LEVEL_MODE{
+        IDLE=0,
+        STANCE,
+        WALKLING,
     };
 
 protected:
-    // Mode current_mode_{Mode::Idle};
+    HIGH_LEVEL_MODE current_mode_{HIGH_LEVEL_MODE::IDLE};
     //  Mode target_mode_{Mode::Idle};
 
 public:
@@ -44,19 +44,37 @@ public:
     virtual void initialize() override = 0;
     virtual void deinitialize() override = 0;
 
-    // Optional: Override these if needed, but can leave as default implementations
-    // virtual VectorXd get_joint_velocities() override;
-    // virtual VectorXd get_joint_torques() override;
-    // virtual void set_target_joint_velocities(const VectorXd& set_target_joint_velocities) override;
-    // virtual void set_target_joint_torques(const VectorXd& set_target_joint_torques) override;
 
-    // New free-flying specific methods - PURE VIRTUAL
-    virtual void set_twist(const DQ& twist) = 0;
-    virtual DQ get_twist() = 0;
 
-    // Mode management (can be overridden by concrete classes)
-    //  void set_mode(const Mode& mode);
-    //  Mode get_mode() const;
+    /**
+     * @brief set_target_twist Sets the desired twist of the robot's base.
+     * @param twist Twist expressed at the body frame
+     *
+     * @note This command only takes effect when the robot is in the appropriate
+     *       HIGH_LEVEL_MODE. The required mode depends on the specific robot
+     *       implementation.
+     */
+    virtual void set_target_twist(const DQ& twist) = 0;
+
+    /**
+     * @brief set_target_base_orientation
+     * @param r The unit quaternion that represents the targer base orienation.
+     * @note This command only takes effect when the robot is in the appropriate
+     *       HIGH_LEVEL_MODE. The required mode depends on the specific robot
+     *       implementation.
+     */
+    virtual void set_target_base_orientation(const DQ& r) = 0;
+
+    /**
+     * @brief set_target_base_height Sets the desired base height with respect to the ground.
+     * @param height Target height in meters
+     * @note This command only takes effect when the robot is in the appropriate
+     *       HIGH_LEVEL_MODE. The required mode depends on the specific robot
+     *       implementation.
+     */
+    virtual void set_target_base_height(const double& base_height) = 0;
+
+
 };
 
 }
