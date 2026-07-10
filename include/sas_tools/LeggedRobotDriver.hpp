@@ -33,7 +33,7 @@ public:
 
     ~LeggedRobotDriver();
 
-    //LeggedRobotDriver(std::atomic_bool* break_loops);
+    LeggedRobotDriver(std::atomic_bool* break_loops);
     LeggedRobotDriver(const std::shared_ptr<ShutdownSignaler>& shutdown_signaler);
 
     // Required implementations from RobotDriver - PURE VIRTUAL
