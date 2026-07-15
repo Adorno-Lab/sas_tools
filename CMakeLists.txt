@@ -14,15 +14,20 @@ find_package(sas_common REQUIRED)
 find_package(sas_robot_driver REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
-
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 
 ##### CPP LIBRARY #####
 add_library(${PROJECT_NAME} SHARED
     src/LeggedRobotDriver.cpp
+    src/sas_legged_robot_driver_client.cpp
     )
 ament_target_dependencies(${PROJECT_NAME} sas_core
     std_msgs
+    geometry_msgs
+    sensor_msgs
+    sas_robot_driver
     Eigen3
     rclcpp)
 
