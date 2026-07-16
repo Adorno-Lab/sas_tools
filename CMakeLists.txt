@@ -21,7 +21,7 @@ find_package(geometry_msgs REQUIRED)
 ##### CPP LIBRARY #####
 add_library(${PROJECT_NAME} SHARED
     src/LeggedRobotDriver.cpp
-    src/sas_legged_robot_driver_client.cpp
+    #src/sas_legged_robot_driver_client.cpp
     )
 ament_target_dependencies(${PROJECT_NAME} sas_core
     std_msgs
