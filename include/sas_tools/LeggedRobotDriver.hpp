@@ -31,7 +31,7 @@ public:
     LeggedRobotDriver(const LeggedRobotDriver&)=delete;
     LeggedRobotDriver()=delete;
 
-    ~LeggedRobotDriver();
+    virtual ~LeggedRobotDriver();
 
     LeggedRobotDriver(std::atomic_bool* break_loops);
     LeggedRobotDriver(const std::shared_ptr<ShutdownSignaler>& shutdown_signaler);
