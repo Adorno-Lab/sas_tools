@@ -19,8 +19,8 @@ public:
      */
     enum class HIGH_LEVEL_MODE{
         IDLE=0,
-        STANCE,
-        WALKLING,
+        STANDING,
+        WALKING,
     };
 
 protected:
@@ -58,7 +58,7 @@ public:
 
     /**
      * @brief set_target_base_orientation
-     * @param r The unit quaternion that represents the targer base orienation.
+     * @param r The unit quaternion that represents the target base orientation.
      * @note This command only takes effect when the robot is in the appropriate
      *       HIGH_LEVEL_MODE. The required mode depends on the specific robot
      *       implementation.
