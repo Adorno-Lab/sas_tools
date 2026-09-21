@@ -93,19 +93,19 @@ public:
     /**
      * @brief get_angular_velocity Returns the robot base's last measured angular
      *        velocity, as reported by the onboard IMU's gyroscope.
-     * @return A 3-element VectorXd (x, y, z), in rad/s, expressed in the body frame.
+     * @return A pure quaternion (wx*i_ + wy*j_+ wz*k_), in rad/s, expressed in the body frame.
      */
-    virtual VectorXd get_angular_velocity() = 0;
+    virtual DQ get_angular_velocity() = 0;
 
     /**
      * @brief get_linear_acceleration Returns the robot base's last measured linear
      *        acceleration, as reported by the onboard IMU's accelerometer.
-     * @return A 3-element VectorXd (x, y, z), in m/s^2, expressed in the body frame.
+     * @return A pure quaternion (a*i_ + a*j_+ a*k_), in m/s^2, expressed in the body frame.
      *         This is the IMU's raw (proper/specific) acceleration reading -- it
      *         includes the gravity component, it is not a gravity-compensated
      *         estimate of the base's inertial acceleration.
      */
-    virtual VectorXd get_linear_acceleration() = 0;
+    virtual DQ get_linear_acceleration() = 0;
 };
 
 }
