@@ -154,17 +154,15 @@ void LeggedRobotDriverServer::send_imu(const DQ &orientation, const DQ &angular_
 }
 
 void LeggedRobotDriverServer::send_status(const LeggedRobotDriver::HIGH_LEVEL_MODE &mode,
-                                          const std::vector<bool> &commandable_joints,
                                           const LeggedRobotDriver::CommandAcceptance &acceptance)
 {
     sas_legged_msgs::msg::LeggedRobotStatus msg;
     msg.header.stamp = node_->get_clock()->now();
     msg.mode = static_cast<uint8_t>(mode);
-    msg.commandable_joints = commandable_joints;
     msg.accepts_twist = acceptance.twist;
     msg.accepts_base_orientation = acceptance.base_orientation;
     msg.accepts_base_height = acceptance.base_height;
-    msg.accepts_manipulator_commands = acceptance.manipulators;
+    msg.commandable_limbs = acceptance.limbs;
     publisher_status_->publish(msg);
 }
 

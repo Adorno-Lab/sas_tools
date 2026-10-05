@@ -18,15 +18,19 @@ namespace sas
 {
 
 /**
- * @brief The LeggedRobotDriverClient class is the client of a LeggedRobotDriver served by
- *        LeggedRobotDriverROS. It extends RobotDriverClient (joint topics) with the legged
- *        robot topics, and uses the same MODE_BLACKLIST_FLAG:
+ * @brief The LeggedRobotDriverClient class is the client of the base of a LeggedRobotDriver served
+ *        by LeggedRobotDriverROS. It extends RobotDriverClient with the legged robot topics, and uses
+ *        the same MODE_BLACKLIST_FLAG:
  *   - JOINT_CONTROL also creates the legged command publishers (twist, mode, base height and
  *     orientation). Only one client per robot may use it.
  *   - JOINT_MONITORING also creates the legged state subscriptions (get/imu, get/status, get/info).
  *   - WATCHDOG_CONTROL is unchanged (set/watchdog_trigger). Only one client per robot may use it.
  *
  * Methods of a blacklisted mode throw std::runtime_error, as in RobotDriverClient.
+ *
+ * The base has no joints, so the joint getters inherited from RobotDriverClient are not used. The
+ * joints belong to the limbs: read and command each limb with a RobotDriverClient on
+ * \<prefix\>/\<name\>, using the limb names of get_limb_names().
  */
 class LeggedRobotDriverClient: public RobotDriverClient
 {
@@ -58,6 +62,7 @@ private:
     void _check_not_blacklisted(const MODE_BLACKLIST_FLAG& mode, const std::string& function) const;
     void _check_exclusive_publisher(const std::string& topic) const;
     void _check_received(const bool& received, const std::string& topic, const std::string& function) const;
+    std::size_t _limb_index(const std::string& limb_name, const std::string& function) const;
 
     void _callback_imu(const sensor_msgs::msg::Imu& msg);
     void _callback_status(const sas_legged_msgs::msg::LeggedRobotStatus& msg);
@@ -161,15 +166,6 @@ public:
     LeggedRobotDriver::HIGH_LEVEL_MODE get_high_level_mode() const;
 
     /**
-     * @brief get_commandable_joint_mask Returns which joints take set/target_joint_positions in the
-     *        current mode, as reported on get/status.
-     * @return One entry per joint of get_joint_positions(), in the order of get_joint_names(). The
-     *         driver ignores the targets of the joints whose entry is false.
-     * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/status was not received yet.
-     */
-    std::vector<bool> get_commandable_joint_mask() const;
-
-    /**
      * @brief accepts_twist Returns true if send_target_twist() takes effect in the current mode.
      * @return The accepts_twist field of the latest get/status.
      * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/status was not received yet.
@@ -192,20 +188,43 @@ public:
     bool accepts_base_height() const;
 
     /**
-     * @brief accepts_manipulator_commands Returns true if the manipulators served by this driver
-     *        (under \<prefix\>/\<name\>) take their joint targets in the current mode.
-     * @return The accepts_manipulator_commands field of the latest get/status.
+     * @brief get_commandable_limbs Returns which limbs accept targets in the current mode, as reported
+     *        on get/status.
+     * @return One entry per limb of get_limb_names(), in the same order: true if the targets sent to
+     *         \<prefix\>/\<name\>/set/target_joint_positions take effect. All false in IDLE.
      * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/status was not received yet.
      */
-    bool accepts_manipulator_commands() const;
+    std::vector<bool> get_commandable_limbs() const;
 
     /**
-     * @brief get_joint_names Returns the names of the joints of get_joint_positions(), as reported on get/info.
-     * @return One name per joint, in the same order as get_joint_positions(). Compare them with the
-     *         kinematic model of the controller to check that it is connected to the robot it expects.
+     * @brief is_limb_commandable Returns true if the limb @p limb_name accepts targets in the current mode.
+     * @param limb_name The name of the limb, e.g. "left_arm".
+     * @return The entry of get_commandable_limbs() that corresponds to @p limb_name.
+     * @throws std::runtime_error if JOINT_MONITORING is blacklisted, or get/info or get/status was not
+     *         received yet.
+     * @throws std::invalid_argument if the robot has no limb called @p limb_name.
+     */
+    bool is_limb_commandable(const std::string& limb_name) const;
+
+    /**
+     * @brief get_limb_names Returns the names of the limbs served by the driver, as reported on get/info.
+     * @return The names, e.g. {"left_leg", "right_leg", "waist", "left_arm", "right_arm"} for the
+     *         Unitree G1. Each limb is a standard SAS robot driver on \<prefix\>/\<name\>.
      * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/info was not received yet.
      */
-    std::vector<std::string> get_joint_names() const;
+    std::vector<std::string> get_limb_names() const;
+
+    /**
+     * @brief get_limb_joint_names Returns the names of the joints of the limb @p limb_name, as reported
+     *        on get/info.
+     * @param limb_name The name of the limb, e.g. "left_arm".
+     * @return One name per joint of \<prefix\>/\<name\>/get/joint_states, in the same order. Compare
+     *         them with the kinematic model of the controller to check that it is connected to the
+     *         robot it expects.
+     * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/info was not received yet.
+     * @throws std::invalid_argument if the robot has no limb called @p limb_name.
+     */
+    std::vector<std::string> get_limb_joint_names(const std::string& limb_name) const;
 
     /**
      * @brief get_supported_high_level_modes Returns the modes the robot supports, as reported on get/info.
@@ -231,13 +250,12 @@ public:
     std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;
 
     /**
-     * @brief is_enabled Returns true once the client received everything it needs: the joint states
-     *        (see RobotDriverClient::is_enabled()), get/info and get/status. Wait for it, while
-     *        spinning the node, before calling the state getters.
-     * @param supported_functionality The joint functionality to check, as in RobotDriverClient::is_enabled().
+     * @brief is_enabled Returns true once the client received get/info and get/status. Wait for it,
+     *        while spinning the node, before calling the state getters. The base has no joints, so
+     *        the joint states of the base are not required; the limbs have their own clients.
      * @return Always false if JOINT_MONITORING is blacklisted.
      */
-    bool is_enabled(const RobotDriver::Functionality& supported_functionality=RobotDriver::Functionality::PositionControl) const;
+    bool is_enabled() const;
 };
 
 }

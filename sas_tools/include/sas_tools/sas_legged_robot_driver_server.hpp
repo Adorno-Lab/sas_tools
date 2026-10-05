@@ -158,19 +158,17 @@ public:
     /**
      * @brief send_status Publishes the current state of the driver on get/status.
      * @param mode The current mode.
-     * @param commandable_joints One entry per joint of the robot: true if the joint takes
-     *        set/target_joint_positions in the current mode.
-     * @param acceptance The commands that take effect in the current mode.
+     * @param acceptance The commands that take effect in the current mode, including which limbs
+     *        accept targets (one entry per limb of get/info, in the same order).
      */
     void send_status(const LeggedRobotDriver::HIGH_LEVEL_MODE& mode,
-                     const std::vector<bool>& commandable_joints,
                      const LeggedRobotDriver::CommandAcceptance& acceptance);
 
     /**
      * @brief send_info Publishes the static description of the robot on get/info. The topic is
      *        transient_local, so clients that connect later also receive the last description.
-     * @param info The description: joint names, supported modes and functionalities, and base
-     *        orientation limits.
+     * @param info The description: limbs and their joint names, supported modes and functionalities,
+     *        and base orientation limits.
      */
     void send_info(const sas_legged_msgs::msg::LeggedRobotInfo& info);
 };

@@ -17,18 +17,22 @@ class LeggedRobotDriverROS;
 /**
  * @brief The LeggedRobotDriver class is the hardware interface of a legged robot.
  *
- * A concrete driver only implements the virtual methods below; it does not use ROS.
- * LeggedRobotDriverROS exposes the driver on the standard legged robot topics and runs
- * its control loop.
+ * A legged robot is modeled as a floating base with limbs. The legs, the arms, and the waist are all
+ * limbs. A concrete driver only implements the virtual methods below; it does not use ROS.
+ * LeggedRobotDriverROS exposes the driver on the standard legged robot topics and runs its control loop:
+ *   - The base (twist, mode, IMU, status, and info) is served on \<prefix\>/.
+ *   - Each limb of get_limbs() is served as a standard SAS robot driver on \<prefix\>/\<name\>.
+ *
+ * Every joint of the robot belongs to exactly one limb, and the base itself has no joints. Thus, a
+ * client obtains every joint of any robot by concatenating the joints of its limbs.
  *
  * The high-level mode decides which commands take effect (the rules are applied by
  * LeggedRobotDriverROS, see get_command_acceptance()):
  *   - IDLE: the robot stays on and balancing; every target is ignored, the twist is zero,
- *     and the arms hold still.
- *   - STANDING: the arms, the base orientation and the base height can be commanded; the
- *     robot cannot walk.
+ *     and the limbs hold still.
+ *   - STANDING: the base orientation and the base height can be commanded; the robot cannot walk.
  *   - WALKING: the twist and the base height are accepted; the base orientation is not.
- *     The arms are accepted only if is_supported(LEGGED_FUNCTIONALITY::MANIPULATION_WHILE_WALKING).
+ *   - In STANDING and WALKING, the limbs accept targets as decided by get_commandable_limbs().
  *
  * The driver starts in IDLE.
  */
@@ -51,18 +55,18 @@ public:
         TWIST=0,
         BASE_HEIGHT,
         BASE_ORIENTATION,
-        MANIPULATION_WHILE_WALKING,
     };
 
     /**
-     * @brief A manipulator (e.g. an arm or the waist) served by this driver.
+     * @brief A limb (e.g. a leg, an arm, or the waist) served by this driver.
      *        LeggedRobotDriverROS exposes it with a standard RobotDriverServer
      *        under \<prefix\>/\<name\>.
      */
-    struct ManipulatorEntry
+    struct LimbEntry
     {
-        std::string name;
-        std::shared_ptr<RobotDriver> driver;
+        std::string name;                     ///< Topic suffix, e.g. "left_leg" or "left_arm".
+        std::shared_ptr<RobotDriver> driver;  ///< The joints of the limb. Its lifecycle belongs to this driver.
+        std::vector<std::string> joint_names; ///< One name per joint of the limb, in the order of its driver.
     };
 
     /**
@@ -73,7 +77,7 @@ public:
         bool twist{false};
         bool base_orientation{false};
         bool base_height{false};
-        bool manipulators{false};
+        std::vector<bool> limbs;   ///< One entry per limb of get_limbs(): true if it accepts targets.
     };
 
 private:
@@ -94,7 +98,7 @@ protected:
 
     /**
      * @brief extra_control_loop_step Robot-specific work executed once per control loop iteration,
-     *        after the standard legged and manipulator steps. A generic client never depends on it.
+     *        after the standard base and limb steps. A generic client never depends on it.
      *        The default implementation does nothing.
      */
     virtual void extra_control_loop_step();
@@ -107,15 +111,21 @@ public:
     LeggedRobotDriver(std::atomic_bool* break_loops);
     LeggedRobotDriver(const std::shared_ptr<ShutdownSignaler>& shutdown_signaler);
 
-    // Required implementations from RobotDriver - PURE VIRTUAL
-    virtual VectorXd get_joint_positions() override = 0;
+    // --- Joints of the base ---
 
     /**
-     * @brief set_target_joint_positions Sets the target positions of every joint of get_joint_positions().
-     * @param set_target_joint_positions_rad The full joint vector, in radians. The driver must ignore
-     *        the entries where get_commandable_joint_mask() is false (all of them in IDLE).
+     * @brief get_joint_positions The base has no joints: every joint belongs to a limb of get_limbs().
+     * @return An empty vector.
      */
-    virtual void set_target_joint_positions(const VectorXd& set_target_joint_positions_rad) override = 0;
+    VectorXd get_joint_positions() final;
+
+    /**
+     * @brief set_target_joint_positions The base has no joints, so targets on \<prefix\>/set/target_joint_positions
+     *        are ignored. Command the limbs on \<prefix\>/\<name\> instead.
+     */
+    void set_target_joint_positions(const VectorXd& set_target_joint_positions_rad) final;
+
+    // --- Lifecycle (required). It also covers the drivers of every limb. ---
     virtual void connect() override = 0;
     virtual void disconnect() override = 0;
     virtual void initialize() override = 0;
@@ -207,7 +217,8 @@ public:
 
     /**
      * @brief get_command_acceptance Returns the commands that take effect in the current mode,
-     *        given is_supported() and get_manipulators().
+     *        given is_supported() and get_commandable_limbs(). No limb accepts targets in IDLE.
+     * @throws std::logic_error if get_commandable_limbs() does not have one entry per limb of get_limbs().
      */
     CommandAcceptance get_command_acceptance() const;
 
@@ -219,37 +230,30 @@ public:
     virtual bool is_supported(const LEGGED_FUNCTIONALITY& functionality) const = 0;
 
     /**
-     * @brief get_joint_names Returns the names of every joint of get_joint_positions(), in the same order.
-     *        Published in get/info, so that a client can compare them with its kinematic model.
+     * @brief get_limbs Returns the limbs served by this driver, e.g. "left_leg", "right_leg", "waist",
+     *        "left_arm", and "right_arm" for the Unitree G1, or the four legs for the Unitree B1 (whose
+     *        Z1 arm runs its own driver). Every joint of the robot served by this driver must belong to
+     *        exactly one limb. The list must not change during the lifetime of the driver:
+     *        LeggedRobotDriverROS creates one server per limb at construction.
+     * @return The limbs, in the order in which they are published in get/info.
      */
-    virtual std::vector<std::string> get_joint_names() const = 0;
+    virtual std::vector<LimbEntry> get_limbs() const = 0;
 
     /**
-     * @brief get_commandable_joint_mask Tells which joints the driver moves when it receives
-     *        set_target_joint_positions() in the current mode.
+     * @brief get_commandable_limbs Tells which limbs apply the targets they receive on
+     *        \<prefix\>/\<name\>/set/target_joint_positions in the current mode.
      *
-     * get_joint_positions() returns every joint of the robot, but a legged robot usually cannot be
-     * commanded through all of them. For instance, in high-level control the legs of the Unitree G1
-     * are moved by Unitree's own locomotion controller, so a target for a leg joint must not be applied.
+     * The driver decides it per limb and per mode. For instance, in high-level control the Unitree G1
+     * moves its legs with Unitree's own locomotion controller, so its legs never accept targets, while
+     * its arms and waist accept them in STANDING. A robot that can move its arms while walking (e.g.
+     * the Unitree H1) marks its arms as commandable in WALKING as well.
      *
-     * The mask has one entry per joint, in the same order as get_joint_positions() and
-     * get_joint_names():
-     *   - true:  the driver applies the target of this joint.
-     *   - false: the driver ignores the target of this joint (the joint is still reported in
-     *            get_joint_positions()).
+     * LeggedRobotDriverROS only forwards the targets of a commandable limb, ignores every limb in IDLE,
+     * and publishes the result in get/status (commandable_limbs).
      *
-     * The mask can change with the mode, and every entry is false in IDLE. LeggedRobotDriverROS
-     * publishes it in get/status (commandable_joints), so a client knows which entries of its
-     * target vector take effect.
-     *
-     * @note This mask only applies to the joints of this driver (\<prefix\>/set/target_joint_positions).
-     *       Manipulators returned by get_manipulators() have their own topics under \<prefix\>/\<name\>
-     *       and are not covered by it. On the G1, for example, the mask is all false and the arms
-     *       and the waist are commanded through their manipulator topics instead.
-     *
-     * @return One bool per joint of get_joint_positions().
+     * @return One entry per limb of get_limbs(), in the same order.
      */
-    virtual std::vector<bool> get_commandable_joint_mask() const = 0;
+    virtual std::vector<bool> get_commandable_limbs() const = 0;
 
     /**
      * @brief get_base_orientation_limits Returns the limits of set_target_base_orientation(), as ZYX
@@ -260,11 +264,6 @@ public:
      */
     virtual std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;
 
-    /**
-     * @brief get_manipulators Returns the manipulators served by this driver. The default
-     *        implementation returns an empty list (e.g. B1, whose Z1 arm runs its own driver).
-     */
-    virtual std::vector<ManipulatorEntry> get_manipulators() const;
 };
 
 }

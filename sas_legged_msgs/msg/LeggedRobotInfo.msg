@@ -1,8 +1,9 @@
 # Static description of a legged robot driver. Published once on <prefix>/get/info (transient_local).
 
-# Names of every joint of get/joint_states, in the same order. A client can compare them with
-# its kinematic model to check that it is connected to the robot it expects.
-string[] joint_names
+# The limbs served by this driver, each under <prefix>/<name>. Every joint of the robot served by
+# this driver belongs to exactly one limb. A client can compare the joint names with its kinematic
+# model to check that it is connected to the robot it expects.
+LimbInfo[] limbs
 
 # HighLevelMode constants the robot supports.
 uint8[] supported_modes
@@ -10,7 +11,6 @@ uint8[] supported_modes
 bool supports_twist
 bool supports_base_height
 bool supports_base_orientation
-bool supports_manipulation_while_walking
 
 # Limits of set/target_base_orientation, in radians, as ZYX roll-pitch-yaw angles relative
 # to the frame F_f (see set/target_base_orientation). Each angle is clamped to [min, max];

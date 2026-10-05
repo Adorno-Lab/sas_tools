@@ -26,7 +26,8 @@ struct LeggedRobotDriverROSConfiguration
  *   1. applies the new high-level mode and passes the commands accepted in the current mode
  *      to the driver (see LeggedRobotDriver::get_command_acceptance()),
  *   2. publishes get/imu and get/status (and get/info in the first iteration),
- *   3. steps one RobotDriverServer per LeggedRobotDriver::get_manipulators() entry, under \<prefix\>/\<name\>,
+ *   3. steps one RobotDriverServer per LeggedRobotDriver::get_limbs() entry, under \<prefix\>/\<name\>,
+ *      forwarding its targets only if the limb is commandable in the current mode,
  *   4. calls LeggedRobotDriver::extra_control_loop_step().
  *
  * Everything runs in the RobotDriverROS thread. Any exception ends the loop, and the whole robot stops.
@@ -34,7 +35,7 @@ struct LeggedRobotDriverROSConfiguration
 class LeggedRobotDriverROS
 {
 private:
-    struct Manipulator
+    struct Limb
     {
         std::string name;
         std::shared_ptr<RobotDriver> driver;
@@ -48,14 +49,14 @@ private:
     std::string topic_prefix_;
 
     LeggedRobotDriverServer legged_server_;
-    std::vector<Manipulator> manipulators_;
+    std::vector<Limb> limbs_;
     RobotDriverROS robot_driver_ros_;
     bool info_sent_{false};
 
     void _control_loop_step();
     void _send_info();
     void _legged_step(const LeggedRobotDriver::CommandAcceptance& acceptance);
-    void _manipulators_step(const LeggedRobotDriver::CommandAcceptance& acceptance);
+    void _limbs_step(const LeggedRobotDriver::CommandAcceptance& acceptance);
     std::tuple<Eigen::Vector3d, Eigen::Vector3d> _get_base_orientation_limits() const;
     DQ _clamp_base_orientation(const DQ& r) const;
 
@@ -70,7 +71,7 @@ public:
      * @param configuration robot_driver_ros.robot_driver_provider_prefix is the topic prefix.
      * @param shutdown_signaler Shared with the driver and every RobotDriverROS loop.
      * @throws std::invalid_argument for a null driver, a non-positive twist timeout, or an invalid
-     *         (empty, duplicated or null) manipulator entry.
+     *         (empty, duplicated or null) limb entry.
      */
     LeggedRobotDriverROS(const std::shared_ptr<rclcpp::Node>& node,
                          const std::shared_ptr<LeggedRobotDriver>& legged_driver,

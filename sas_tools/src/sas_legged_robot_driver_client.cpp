@@ -158,12 +158,6 @@ LeggedRobotDriver::HIGH_LEVEL_MODE LeggedRobotDriverClient::get_high_level_mode(
     return static_cast<LeggedRobotDriver::HIGH_LEVEL_MODE>(status_.mode);
 }
 
-std::vector<bool> LeggedRobotDriverClient::get_commandable_joint_mask() const
-{
-    _check_received(status_received_, "get/status", __FUNCTION__);
-    return status_.commandable_joints;
-}
-
 bool LeggedRobotDriverClient::accepts_twist() const
 {
     _check_received(status_received_, "get/status", __FUNCTION__);
@@ -182,16 +176,40 @@ bool LeggedRobotDriverClient::accepts_base_height() const
     return status_.accepts_base_height;
 }
 
-bool LeggedRobotDriverClient::accepts_manipulator_commands() const
+std::size_t LeggedRobotDriverClient::_limb_index(const std::string &limb_name, const std::string &function) const
 {
-    _check_received(status_received_, "get/status", __FUNCTION__);
-    return status_.accepts_manipulator_commands;
+    _check_received(info_received_, "get/info", function);
+    for (std::size_t i = 0; i < info_.limbs.size(); i++)
+        if (info_.limbs.at(i).name == limb_name)
+            return i;
+    throw std::invalid_argument(topic_prefix_ + "::LeggedRobotDriverClient::" + function + "::the robot has no limb called " + limb_name + ".");
 }
 
-std::vector<std::string> LeggedRobotDriverClient::get_joint_names() const
+std::vector<bool> LeggedRobotDriverClient::get_commandable_limbs() const
+{
+    _check_received(status_received_, "get/status", __FUNCTION__);
+    return status_.commandable_limbs;
+}
+
+bool LeggedRobotDriverClient::is_limb_commandable(const std::string &limb_name) const
+{
+    const std::size_t index = _limb_index(limb_name, __FUNCTION__);
+    _check_received(status_received_, "get/status", __FUNCTION__);
+    return index < status_.commandable_limbs.size() && status_.commandable_limbs.at(index);
+}
+
+std::vector<std::string> LeggedRobotDriverClient::get_limb_names() const
 {
     _check_received(info_received_, "get/info", __FUNCTION__);
-    return info_.joint_names;
+    std::vector<std::string> names;
+    for (const auto& limb : info_.limbs)
+        names.push_back(limb.name);
+    return names;
+}
+
+std::vector<std::string> LeggedRobotDriverClient::get_limb_joint_names(const std::string &limb_name) const
+{
+    return info_.limbs.at(_limb_index(limb_name, __FUNCTION__)).joint_names;
 }
 
 std::vector<LeggedRobotDriver::HIGH_LEVEL_MODE> LeggedRobotDriverClient::get_supported_high_level_modes() const
@@ -208,10 +226,9 @@ bool LeggedRobotDriverClient::is_supported(const LeggedRobotDriver::LEGGED_FUNCT
     _check_received(info_received_, "get/info", __FUNCTION__);
     switch (functionality)
     {
-    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::TWIST:                       return info_.supports_twist;
-    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT:                 return info_.supports_base_height;
-    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_ORIENTATION:            return info_.supports_base_orientation;
-    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::MANIPULATION_WHILE_WALKING:  return info_.supports_manipulation_while_walking;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::TWIST:             return info_.supports_twist;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT:       return info_.supports_base_height;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_ORIENTATION:  return info_.supports_base_orientation;
     }
     return false;
 }
@@ -223,9 +240,9 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriverClient::get_base_o
             Eigen::Vector3d(info_.max_base_roll, info_.max_base_pitch, info_.max_base_yaw)};
 }
 
-bool LeggedRobotDriverClient::is_enabled(const RobotDriver::Functionality &supported_functionality) const
+bool LeggedRobotDriverClient::is_enabled() const
 {
-    return RobotDriverClient::is_enabled(supported_functionality) && info_received_ && status_received_;
+    return info_received_ && status_received_;
 }
 
 }

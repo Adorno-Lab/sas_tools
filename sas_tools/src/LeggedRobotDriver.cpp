@@ -46,24 +46,40 @@ LeggedRobotDriver::HIGH_LEVEL_MODE LeggedRobotDriver::get_high_level_mode() cons
 
 LeggedRobotDriver::CommandAcceptance LeggedRobotDriver::get_command_acceptance() const
 {
+    const std::size_t number_of_limbs = get_limbs().size();
+
     CommandAcceptance acceptance;
+    acceptance.limbs = std::vector<bool>(number_of_limbs, false);
     switch (current_mode_)
     {
     case HIGH_LEVEL_MODE::IDLE:
-        break;
+        return acceptance;
     case HIGH_LEVEL_MODE::STANDING:
         acceptance.base_orientation = is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION);
         acceptance.base_height      = is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT);
-        acceptance.manipulators     = true;
         break;
     case HIGH_LEVEL_MODE::WALKING:
         acceptance.twist            = is_supported(LEGGED_FUNCTIONALITY::TWIST);
         acceptance.base_height      = is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT);
-        acceptance.manipulators     = is_supported(LEGGED_FUNCTIONALITY::MANIPULATION_WHILE_WALKING);
         break;
     }
-    acceptance.manipulators = acceptance.manipulators && !get_manipulators().empty();
+
+    acceptance.limbs = get_commandable_limbs();
+    if (acceptance.limbs.size() != number_of_limbs)
+        throw std::logic_error("LeggedRobotDriver::get_command_acceptance: get_commandable_limbs() returned " +
+                               std::to_string(acceptance.limbs.size()) + " entries, but there are " +
+                               std::to_string(number_of_limbs) + " limbs.");
     return acceptance;
+}
+
+VectorXd LeggedRobotDriver::get_joint_positions()
+{
+    return VectorXd();
+}
+
+void LeggedRobotDriver::set_target_joint_positions(const VectorXd&)
+{
+
 }
 
 void LeggedRobotDriver::extra_control_loop_step()
@@ -76,9 +92,5 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriver::get_base_orienta
     return {Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()};
 }
 
-std::vector<LeggedRobotDriver::ManipulatorEntry> LeggedRobotDriver::get_manipulators() const
-{
-    return {};
-}
 
 }
