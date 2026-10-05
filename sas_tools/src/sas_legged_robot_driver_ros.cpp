@@ -100,16 +100,15 @@ void LeggedRobotDriverROS::_control_loop_step()
 void LeggedRobotDriverROS::_send_info()
 {
     sas_legged_msgs::msg::LeggedRobotInfo info;
-    info.robot_model = legged_driver_->get_robot_model();
     info.joint_names = legged_driver_->get_joint_names();
     for (const auto& mode : legged_driver_->get_supported_high_level_modes())
         info.supported_modes.push_back(static_cast<uint8_t>(mode));
 
-    using F = LeggedRobotDriver::LeggedFunctionality;
-    info.supports_twist = legged_driver_->is_supported(F::Twist);
-    info.supports_base_height = legged_driver_->is_supported(F::BaseHeight);
-    info.supports_base_orientation = legged_driver_->is_supported(F::BaseOrientation);
-    info.supports_manipulation_while_walking = legged_driver_->is_supported(F::ManipulationWhileWalking);
+    using F = LeggedRobotDriver::LEGGED_FUNCTIONALITY;
+    info.supports_twist = legged_driver_->is_supported(F::TWIST);
+    info.supports_base_height = legged_driver_->is_supported(F::BASE_HEIGHT);
+    info.supports_base_orientation = legged_driver_->is_supported(F::BASE_ORIENTATION);
+    info.supports_manipulation_while_walking = legged_driver_->is_supported(F::MANIPULATION_WHILE_WALKING);
 
     const auto [min_rpy, max_rpy] = _get_base_orientation_limits();
     info.min_base_roll  = min_rpy(0);
@@ -124,7 +123,7 @@ void LeggedRobotDriverROS::_send_info()
 
 void LeggedRobotDriverROS::_legged_step(const LeggedRobotDriver::CommandAcceptance &acceptance)
 {
-    if (legged_driver_->is_supported(LeggedRobotDriver::LeggedFunctionality::Twist))
+    if (legged_driver_->is_supported(LeggedRobotDriver::LEGGED_FUNCTIONALITY::TWIST))
     {
         const bool twist_is_fresh = legged_server_.has_received_target_twist() &&
                                     legged_server_.get_seconds_since_last_target_twist() <= configuration_.twist_timeout_sec;

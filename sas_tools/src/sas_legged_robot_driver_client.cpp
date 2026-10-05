@@ -188,12 +188,6 @@ bool LeggedRobotDriverClient::accepts_manipulator_commands() const
     return status_.accepts_manipulator_commands;
 }
 
-std::string LeggedRobotDriverClient::get_robot_model() const
-{
-    _check_received(info_received_, "get/info", __FUNCTION__);
-    return info_.robot_model;
-}
-
 std::vector<std::string> LeggedRobotDriverClient::get_joint_names() const
 {
     _check_received(info_received_, "get/info", __FUNCTION__);
@@ -209,15 +203,15 @@ std::vector<LeggedRobotDriver::HIGH_LEVEL_MODE> LeggedRobotDriverClient::get_sup
     return modes;
 }
 
-bool LeggedRobotDriverClient::is_supported(const LeggedRobotDriver::LeggedFunctionality &functionality) const
+bool LeggedRobotDriverClient::is_supported(const LeggedRobotDriver::LEGGED_FUNCTIONALITY &functionality) const
 {
     _check_received(info_received_, "get/info", __FUNCTION__);
     switch (functionality)
     {
-    case LeggedRobotDriver::LeggedFunctionality::Twist:                    return info_.supports_twist;
-    case LeggedRobotDriver::LeggedFunctionality::BaseHeight:               return info_.supports_base_height;
-    case LeggedRobotDriver::LeggedFunctionality::BaseOrientation:          return info_.supports_base_orientation;
-    case LeggedRobotDriver::LeggedFunctionality::ManipulationWhileWalking: return info_.supports_manipulation_while_walking;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::TWIST:                       return info_.supports_twist;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT:                 return info_.supports_base_height;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_ORIENTATION:            return info_.supports_base_orientation;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::MANIPULATION_WHILE_WALKING:  return info_.supports_manipulation_while_walking;
     }
     return false;
 }

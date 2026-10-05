@@ -121,10 +121,9 @@ public:
     bool accepts_base_height() const;
     bool accepts_manipulator_commands() const;
 
-    std::string get_robot_model() const;
     std::vector<std::string> get_joint_names() const;
     std::vector<LeggedRobotDriver::HIGH_LEVEL_MODE> get_supported_high_level_modes() const;
-    bool is_supported(const LeggedRobotDriver::LeggedFunctionality& functionality) const;
+    bool is_supported(const LeggedRobotDriver::LEGGED_FUNCTIONALITY& functionality) const;
 
     /**
      * @brief get_base_orientation_limits Returns the limits of the base orientation, as ZYX

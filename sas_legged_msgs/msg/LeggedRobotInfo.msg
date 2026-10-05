@@ -1,7 +1,7 @@
 # Static description of a legged robot driver. Published once on <prefix>/get/info (transient_local).
-string robot_model
 
-# Names of every joint of get/joint_states, in the same order.
+# Names of every joint of get/joint_states, in the same order. A client can compare them with
+# its kinematic model to check that it is connected to the robot it expects.
 string[] joint_names
 
 # HighLevelMode constants the robot supports.

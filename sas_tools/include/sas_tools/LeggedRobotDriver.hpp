@@ -28,7 +28,7 @@ class LeggedRobotDriverROS;
  *   - STANDING: the arms, the base orientation and the base height can be commanded; the
  *     robot cannot walk.
  *   - WALKING: the twist and the base height are accepted; the base orientation is not.
- *     The arms are accepted only if is_supported(LeggedFunctionality::ManipulationWhileWalking).
+ *     The arms are accepted only if is_supported(LEGGED_FUNCTIONALITY::MANIPULATION_WHILE_WALKING).
  *
  * The driver starts in IDLE.
  */
@@ -47,11 +47,11 @@ public:
     /**
      * @brief Enumeration of the optional legged robot functionalities.
      */
-    enum class LeggedFunctionality{
-        Twist=0,
-        BaseHeight,
-        BaseOrientation,
-        ManipulationWhileWalking,
+    enum class LEGGED_FUNCTIONALITY{
+        TWIST=0,
+        BASE_HEIGHT,
+        BASE_ORIENTATION,
+        MANIPULATION_WHILE_WALKING,
     };
 
     /**
@@ -136,7 +136,7 @@ public:
      * @param r The unit quaternion r = r_z(yaw)*r_y(pitch)*r_x(roll) (ZYX roll-pitch-yaw angles),
      *        relative to the frame F_f. F_f is the base frame at the moment the robot entered
      *        STANDING, so r = 1 keeps the pose the robot had when STANDING started.
-     * @note Only called in STANDING, if is_supported(LeggedFunctionality::BaseOrientation), with the
+     * @note Only called in STANDING, if is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION), with the
      *       angles already clamped to get_base_orientation_limits().
      */
     virtual void set_target_base_orientation(const DQ& r) = 0;
@@ -144,7 +144,7 @@ public:
     /**
      * @brief set_target_base_height Sets the desired base height with respect to the ground.
      * @param base_height Target height in meters
-     * @note Only called in STANDING and WALKING, if is_supported(LeggedFunctionality::BaseHeight).
+     * @note Only called in STANDING and WALKING, if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT).
      */
     virtual void set_target_base_height(const double& base_height) = 0;
 
@@ -214,23 +214,40 @@ public:
     // --- Description ---
 
     /**
-     * @brief get_robot_model Returns the robot model, e.g. "Unitree G1".
-     */
-    virtual std::string get_robot_model() const = 0;
-
-    /**
      * @brief is_supported Returns true if the robot supports @p functionality.
      */
-    virtual bool is_supported(const LeggedFunctionality& functionality) const = 0;
+    virtual bool is_supported(const LEGGED_FUNCTIONALITY& functionality) const = 0;
 
     /**
      * @brief get_joint_names Returns the names of every joint of get_joint_positions(), in the same order.
+     *        Published in get/info, so that a client can compare them with its kinematic model.
      */
     virtual std::vector<std::string> get_joint_names() const = 0;
 
     /**
-     * @brief get_commandable_joint_mask Returns, for every joint of get_joint_positions(), whether
-     *        set_target_joint_positions() commands it in the current mode. All false in IDLE.
+     * @brief get_commandable_joint_mask Tells which joints the driver moves when it receives
+     *        set_target_joint_positions() in the current mode.
+     *
+     * get_joint_positions() returns every joint of the robot, but a legged robot usually cannot be
+     * commanded through all of them. For instance, in high-level control the legs of the Unitree G1
+     * are moved by Unitree's own locomotion controller, so a target for a leg joint must not be applied.
+     *
+     * The mask has one entry per joint, in the same order as get_joint_positions() and
+     * get_joint_names():
+     *   - true:  the driver applies the target of this joint.
+     *   - false: the driver ignores the target of this joint (the joint is still reported in
+     *            get_joint_positions()).
+     *
+     * The mask can change with the mode, and every entry is false in IDLE. LeggedRobotDriverROS
+     * publishes it in get/status (commandable_joints), so a client knows which entries of its
+     * target vector take effect.
+     *
+     * @note This mask only applies to the joints of this driver (<prefix>/set/target_joint_positions).
+     *       Manipulators returned by get_manipulators() have their own topics under <prefix>/<name>
+     *       and are not covered by it. On the G1, for example, the mask is all false and the arms
+     *       and the waist are commanded through their manipulator topics instead.
+     *
+     * @return One bool per joint of get_joint_positions().
      */
     virtual std::vector<bool> get_commandable_joint_mask() const = 0;
 
@@ -238,7 +255,7 @@ public:
      * @brief get_base_orientation_limits Returns the limits of set_target_base_orientation(), as ZYX
      *        roll-pitch-yaw angles in radians relative to F_f. The limits do not need to be symmetric.
      *        The default implementation returns zeros, which is correct only for robots that do not
-     *        support LeggedFunctionality::BaseOrientation.
+     *        support LEGGED_FUNCTIONALITY::BASE_ORIENTATION.
      * @return {min, max}, each as {roll, pitch, yaw}, with min <= max for every angle.
      */
     virtual std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;

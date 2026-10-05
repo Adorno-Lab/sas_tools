@@ -52,14 +52,14 @@ LeggedRobotDriver::CommandAcceptance LeggedRobotDriver::get_command_acceptance()
     case HIGH_LEVEL_MODE::IDLE:
         break;
     case HIGH_LEVEL_MODE::STANDING:
-        acceptance.base_orientation = is_supported(LeggedFunctionality::BaseOrientation);
-        acceptance.base_height      = is_supported(LeggedFunctionality::BaseHeight);
+        acceptance.base_orientation = is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION);
+        acceptance.base_height      = is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT);
         acceptance.manipulators     = true;
         break;
     case HIGH_LEVEL_MODE::WALKING:
-        acceptance.twist            = is_supported(LeggedFunctionality::Twist);
-        acceptance.base_height      = is_supported(LeggedFunctionality::BaseHeight);
-        acceptance.manipulators     = is_supported(LeggedFunctionality::ManipulationWhileWalking);
+        acceptance.twist            = is_supported(LEGGED_FUNCTIONALITY::TWIST);
+        acceptance.base_height      = is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT);
+        acceptance.manipulators     = is_supported(LEGGED_FUNCTIONALITY::MANIPULATION_WHILE_WALKING);
         break;
     }
     acceptance.manipulators = acceptance.manipulators && !get_manipulators().empty();
