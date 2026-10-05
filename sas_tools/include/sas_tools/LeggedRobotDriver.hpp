@@ -1,8 +1,8 @@
 #pragma once
 
-#include <array>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <sas_core/sas_robot_driver.hpp>
 #include <dqrobotics/DQ.h>
@@ -235,11 +235,13 @@ public:
     virtual std::vector<bool> get_commandable_joint_mask() const = 0;
 
     /**
-     * @brief get_base_orientation_limits Returns the symmetric limits {roll, pitch, yaw}, in radians, of
-     *        set_target_base_orientation(). The default implementation returns zeros, which is correct
-     *        only for robots that do not support LeggedFunctionality::BaseOrientation.
+     * @brief get_base_orientation_limits Returns the limits of set_target_base_orientation(), as ZYX
+     *        roll-pitch-yaw angles in radians relative to F_f. The limits do not need to be symmetric.
+     *        The default implementation returns zeros, which is correct only for robots that do not
+     *        support LeggedFunctionality::BaseOrientation.
+     * @return {min, max}, each as {roll, pitch, yaw}, with min <= max for every angle.
      */
-    virtual std::array<double, 3> get_base_orientation_limits() const;
+    virtual std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;
 
     /**
      * @brief get_manipulators Returns the manipulators served by this driver. The default

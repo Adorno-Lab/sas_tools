@@ -1,7 +1,5 @@
 #include <sas_tools/sas_legged_robot_driver_ros.hpp>
 #include <sas_tools/rpy_conversions.hpp>
-#include <algorithm>
-#include <cmath>
 #include <set>
 #include <stdexcept>
 
@@ -113,10 +111,13 @@ void LeggedRobotDriverROS::_send_info()
     info.supports_base_orientation = legged_driver_->is_supported(F::BaseOrientation);
     info.supports_manipulation_while_walking = legged_driver_->is_supported(F::ManipulationWhileWalking);
 
-    const auto limits = legged_driver_->get_base_orientation_limits();
-    info.max_base_roll  = limits[0];
-    info.max_base_pitch = limits[1];
-    info.max_base_yaw   = limits[2];
+    const auto [min_rpy, max_rpy] = _get_base_orientation_limits();
+    info.min_base_roll  = min_rpy(0);
+    info.max_base_roll  = max_rpy(0);
+    info.min_base_pitch = min_rpy(1);
+    info.max_base_pitch = max_rpy(1);
+    info.min_base_yaw   = min_rpy(2);
+    info.max_base_yaw   = max_rpy(2);
 
     legged_server_.send_info(info);
 }
@@ -195,13 +196,19 @@ void LeggedRobotDriverROS::_manipulators_step(const LeggedRobotDriver::CommandAc
     }
 }
 
-DQ LeggedRobotDriverROS::_clamp_base_orientation(const DQ &r) const
+std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriverROS::_get_base_orientation_limits() const
 {
     const auto limits = legged_driver_->get_base_orientation_limits();
+    if ((std::get<0>(limits).array() > std::get<1>(limits).array()).any())
+        throw std::invalid_argument("LeggedRobotDriverROS: get_base_orientation_limits() returned min > max.");
+    return limits;
+}
+
+DQ LeggedRobotDriverROS::_clamp_base_orientation(const DQ &r) const
+{
+    const auto [min_rpy, max_rpy] = _get_base_orientation_limits();
     const Eigen::Vector3d rpy = unit_quaternion_to_rpy(r);
-    Eigen::Vector3d clamped;
-    for (int i = 0; i < 3; i++)
-        clamped(i) = std::clamp(rpy(i), -std::abs(limits[i]), std::abs(limits[i]));
+    const Eigen::Vector3d clamped = rpy.cwiseMax(min_rpy).cwiseMin(max_rpy);
 
     if (clamped != rpy)
         RCLCPP_WARN_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,

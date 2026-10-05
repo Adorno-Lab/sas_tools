@@ -222,10 +222,11 @@ bool LeggedRobotDriverClient::is_supported(const LeggedRobotDriver::LeggedFuncti
     return false;
 }
 
-std::array<double, 3> LeggedRobotDriverClient::get_base_orientation_limits() const
+std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriverClient::get_base_orientation_limits() const
 {
     _check_received(info_received_, "get/info", __FUNCTION__);
-    return {info_.max_base_roll, info_.max_base_pitch, info_.max_base_yaw};
+    return {Eigen::Vector3d(info_.min_base_roll, info_.min_base_pitch, info_.min_base_yaw),
+            Eigen::Vector3d(info_.max_base_roll, info_.max_base_pitch, info_.max_base_yaw)};
 }
 
 bool LeggedRobotDriverClient::is_enabled(const RobotDriver::Functionality &supported_functionality) const

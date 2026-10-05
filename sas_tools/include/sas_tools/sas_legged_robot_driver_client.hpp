@@ -1,7 +1,7 @@
 #pragma once
 
-#include <array>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
@@ -127,9 +127,11 @@ public:
     bool is_supported(const LeggedRobotDriver::LeggedFunctionality& functionality) const;
 
     /**
-     * @brief get_base_orientation_limits Returns the symmetric limits {roll, pitch, yaw}, in radians.
+     * @brief get_base_orientation_limits Returns the limits of the base orientation, as ZYX
+     *        roll-pitch-yaw angles in radians relative to F_f.
+     * @return {min, max}, each as {roll, pitch, yaw}.
      */
-    std::array<double, 3> get_base_orientation_limits() const;
+    std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;
 
     /**
      * @brief is_enabled Returns true once the joint states (see RobotDriverClient::is_enabled()),

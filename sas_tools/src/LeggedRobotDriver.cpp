@@ -71,9 +71,9 @@ void LeggedRobotDriver::extra_control_loop_step()
 
 }
 
-std::array<double, 3> LeggedRobotDriver::get_base_orientation_limits() const
+std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriver::get_base_orientation_limits() const
 {
-    return {0.0, 0.0, 0.0};
+    return {Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()};
 }
 
 std::vector<LeggedRobotDriver::ManipulatorEntry> LeggedRobotDriver::get_manipulators() const

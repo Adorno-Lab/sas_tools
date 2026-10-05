@@ -12,9 +12,12 @@ bool supports_base_height
 bool supports_base_orientation
 bool supports_manipulation_while_walking
 
-# Symmetric limits of set/target_base_orientation, in radians, as ZYX roll-pitch-yaw angles
-# relative to the frame F_f (see set/target_base_orientation). Targets are clamped to
-# [-max, max]. Zero when supports_base_orientation is false.
+# Limits of set/target_base_orientation, in radians, as ZYX roll-pitch-yaw angles relative
+# to the frame F_f (see set/target_base_orientation). Each angle is clamped to [min, max];
+# the limits do not need to be symmetric. Zero when supports_base_orientation is false.
+float64 min_base_roll
 float64 max_base_roll
+float64 min_base_pitch
 float64 max_base_pitch
+float64 min_base_yaw
 float64 max_base_yaw

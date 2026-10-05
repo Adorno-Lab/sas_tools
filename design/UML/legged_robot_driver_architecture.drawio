@@ -283,7 +283,7 @@
         <mxCell id="1. 86" value="+ is_supported(LeggedFunctionality) : bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 66">
           <mxGeometry x="0" y="398" width="350" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 87" value="+ get_base_orientation_limits() : {roll, pitch, yaw}" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 66">
+        <mxCell id="1. 87" value="+ get_base_orientation_limits() : {min, max} (rpy)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 66">
           <mxGeometry x="0" y="418" width="350" height="20" as="geometry" />
         </mxCell>
         <mxCell id="1. 88" value="+ is_enabled() : bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 66">
@@ -475,7 +475,7 @@
         <mxCell id="1. 150" value="+ get_commandable_joint_mask() : vector&amp;lt;bool&amp;gt; = 0" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fontColor=#2D7600;" vertex="1" parent="1. 130">
           <mxGeometry x="0" y="398" width="380" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 151" value="+ get_base_orientation_limits()   (default: zeros)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fontColor=#2D7600;" vertex="1" parent="1. 130">
+        <mxCell id="1. 151" value="+ get_base_orientation_limits() : {min, max} (default: 0)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fontColor=#2D7600;" vertex="1" parent="1. 130">
           <mxGeometry x="0" y="418" width="380" height="20" as="geometry" />
         </mxCell>
         <mxCell id="1. 152" value="+ get_manipulators()   (default: empty)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fontColor=#2D7600;" vertex="1" parent="1. 130">
@@ -595,13 +595,13 @@
         <mxCell id="1. 190" value="bool supports_manipulation_while_walking" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
           <mxGeometry x="0" y="164" width="260" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 191" value="float64 max_base_roll" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
+        <mxCell id="1. 191" value="float64 min_base_roll, max_base_roll" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
           <mxGeometry x="0" y="184" width="260" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 192" value="float64 max_base_pitch" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
+        <mxCell id="1. 192" value="float64 min_base_pitch, max_base_pitch" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
           <mxGeometry x="0" y="204" width="260" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 193" value="float64 max_base_yaw" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
+        <mxCell id="1. 193" value="float64 min_base_yaw, max_base_yaw" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 183">
           <mxGeometry x="0" y="224" width="260" height="20" as="geometry" />
         </mxCell>
         <mxCell id="1. 194" value="RobotDriverUnitreeG1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" vertex="1" parent="1">
