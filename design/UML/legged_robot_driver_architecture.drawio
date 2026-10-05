@@ -622,10 +622,10 @@
         <mxCell id="1. 199" value="+ (implements every LeggedRobotDriver virtual)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;" vertex="1" parent="1. 194">
           <mxGeometry x="0" y="98" width="380" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 200" value="get_limbs(): left_leg, right_leg, torso, left_arm, right_arm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;fontColor=#666666;" vertex="1" parent="1. 194">
+        <mxCell id="1. 200" value="get_limbs(): left_leg, right_leg, waist, left_arm, right_arm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;fontColor=#666666;" vertex="1" parent="1. 194">
           <mxGeometry x="0" y="118" width="380" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="1. 201" value="get_commandable_limbs(): torso and arms in STANDING; legs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;fontColor=#666666;" vertex="1" parent="1. 194">
+        <mxCell id="1. 201" value="get_commandable_limbs(): waist and arms in STANDING; legs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;fontColor=#666666;" vertex="1" parent="1. 194">
           <mxGeometry x="0" y="138" width="380" height="20" as="geometry" />
         </mxCell>
         <mxCell id="1. 202" value="never (Unitree&amp;#x27;s locomotion controller moves them)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;fontColor=#666666;" vertex="1" parent="1. 194">
@@ -898,7 +898,7 @@
         <mxCell id="2. 1" value="&lt;b&gt;Runtime architecture: the same kinematic control code drives different robots&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
           <mxGeometry x="30" y="10" width="1400" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="2. 2" value="&lt;b&gt;A) Unitree G1: every limb (legs, torso, arms) is served by the legged driver process (single loop)&lt;/b&gt;" style="text;html=1;align=left;fontSize=15;" vertex="1" parent="1">
+        <mxCell id="2. 2" value="&lt;b&gt;A) Unitree G1: every limb (legs, waist, arms) is served by the legged driver process (single loop)&lt;/b&gt;" style="text;html=1;align=left;fontSize=15;" vertex="1" parent="1">
           <mxGeometry x="30" y="50" width="1200" height="26" as="geometry" />
         </mxCell>
         <mxCell id="2. 3" value="watchdog node  (desktop computer)" style="rounded=1;whiteSpace=wrap;html=1;dashed=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=13;arcSize=3;fillColor=#f3e5f5;strokeColor=#3700CC;" vertex="1" parent="1">
@@ -919,7 +919,7 @@
         <mxCell id="2. 8" value="&lt;b&gt;RobotDriverClient (right_leg)&lt;/b&gt;&lt;br&gt;&lt;i&gt;prefix: sas_g1/g1_1/right_leg&lt;/i&gt;&lt;br&gt;blacklist: WATCHDOG_CONTROL" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" vertex="1" parent="1">
           <mxGeometry x="60" y="406" width="410" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="2. 9" value="&lt;b&gt;RobotDriverClient (torso)&lt;/b&gt;&lt;br&gt;&lt;i&gt;prefix: sas_g1/g1_1/torso&lt;/i&gt;&lt;br&gt;blacklist: WATCHDOG_CONTROL" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" vertex="1" parent="1">
+        <mxCell id="2. 9" value="&lt;b&gt;RobotDriverClient (waist)&lt;/b&gt;&lt;br&gt;&lt;i&gt;prefix: sas_g1/g1_1/waist&lt;/i&gt;&lt;br&gt;blacklist: WATCHDOG_CONTROL" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" vertex="1" parent="1">
           <mxGeometry x="60" y="476" width="410" height="60" as="geometry" />
         </mxCell>
         <mxCell id="2. 10" value="&lt;b&gt;RobotDriverClient (left_arm)&lt;/b&gt;&lt;br&gt;&lt;i&gt;prefix: sas_g1/g1_1/left_arm&lt;/i&gt;&lt;br&gt;blacklist: WATCHDOG_CONTROL" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" vertex="1" parent="1">
@@ -940,7 +940,7 @@
         <mxCell id="2. 15" value="&lt;b&gt;RobotDriverServer&lt;/b&gt;&lt;br&gt;&lt;i&gt;sas_g1/g1_1/right_leg&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
           <mxGeometry x="1030" y="406" width="330" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="2. 16" value="&lt;b&gt;RobotDriverServer&lt;/b&gt;&lt;br&gt;&lt;i&gt;sas_g1/g1_1/torso&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+        <mxCell id="2. 16" value="&lt;b&gt;RobotDriverServer&lt;/b&gt;&lt;br&gt;&lt;i&gt;sas_g1/g1_1/waist&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
           <mxGeometry x="1030" y="476" width="330" height="60" as="geometry" />
         </mxCell>
         <mxCell id="2. 17" value="&lt;b&gt;RobotDriverServer&lt;/b&gt;&lt;br&gt;&lt;i&gt;sas_g1/g1_1/left_arm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
@@ -949,7 +949,7 @@
         <mxCell id="2. 18" value="&lt;b&gt;RobotDriverServer&lt;/b&gt;&lt;br&gt;&lt;i&gt;sas_g1/g1_1/right_arm&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
           <mxGeometry x="1030" y="616" width="330" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="2. 19" value="&lt;b&gt;LeggedRobotDriverROS&lt;/b&gt;&lt;br&gt;one RobotDriverROS loop; its callback steps&lt;br&gt;the legged server and every limb server&lt;br&gt;&lt;br&gt;RobotDriverUnitreeG1 : LeggedRobotDriver&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(LEFT_LEG)&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(RIGHT_LEG)&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(TORSO)&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(LEFT_ARM)&lt;br&gt;&amp;nbsp;&amp;nbsp;└ RobotDriverUnitreeG1Limb(RIGHT_ARM)&lt;br&gt;&lt;br&gt;all share one &lt;b&gt;DriverUnitreeG1&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+        <mxCell id="2. 19" value="&lt;b&gt;LeggedRobotDriverROS&lt;/b&gt;&lt;br&gt;one RobotDriverROS loop; its callback steps&lt;br&gt;the legged server and every limb server&lt;br&gt;&lt;br&gt;RobotDriverUnitreeG1 : LeggedRobotDriver&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(LEFT_LEG)&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(RIGHT_LEG)&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(WAIST)&lt;br&gt;&amp;nbsp;&amp;nbsp;├ RobotDriverUnitreeG1Limb(LEFT_ARM)&lt;br&gt;&amp;nbsp;&amp;nbsp;└ RobotDriverUnitreeG1Limb(RIGHT_ARM)&lt;br&gt;&lt;br&gt;all share one &lt;b&gt;DriverUnitreeG1&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;arcSize=8;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
           <mxGeometry x="1420" y="126" width="370" height="550" as="geometry" />
         </mxCell>
         <mxCell id="2. 20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="1" source="2. 13" target="2. 19">

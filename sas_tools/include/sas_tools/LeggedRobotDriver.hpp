@@ -230,7 +230,7 @@ public:
     virtual bool is_supported(const LEGGED_FUNCTIONALITY& functionality) const = 0;
 
     /**
-     * @brief get_limbs Returns the limbs served by this driver, e.g. "left_leg", "right_leg", "torso",
+     * @brief get_limbs Returns the limbs served by this driver, e.g. "left_leg", "right_leg", "waist",
      *        "left_arm", and "right_arm" for the Unitree G1, or the four legs for the Unitree B1 (whose
      *        Z1 arm runs its own driver). Every joint of the robot served by this driver must belong to
      *        exactly one limb. The list must not change during the lifetime of the driver:
@@ -245,7 +245,7 @@ public:
      *
      * The driver decides it per limb and per mode. For instance, in high-level control the Unitree G1
      * moves its legs with Unitree's own locomotion controller, so its legs never accept targets, while
-     * its torso and arms accept them in STANDING. A robot that can move its arms while walking (e.g.
+     * its waist and arms accept them in STANDING. A robot that can move its arms while walking (e.g.
      * the Unitree H1) marks its arms as commandable in WALKING as well.
      *
      * LeggedRobotDriverROS only forwards the targets of a commandable limb, ignores every limb in IDLE,
