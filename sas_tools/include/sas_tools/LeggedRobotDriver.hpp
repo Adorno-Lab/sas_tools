@@ -31,7 +31,7 @@ class LeggedRobotDriverROS;
  *   - IDLE: the robot stays on and balancing; every target is ignored, the twist is zero,
  *     and the limbs hold still.
  *   - STANDING: the base orientation and the base height can be commanded; the robot cannot walk.
- *   - WALKING: the twist, the base orientation, and the base height can be commanded.
+ *   - WALKING: the twist and the base height are accepted; the base orientation is not.
  *   - In STANDING and WALKING, the limbs accept targets as decided by get_commandable_limbs().
  *
  * The driver starts in IDLE.
@@ -146,7 +146,7 @@ public:
      * @param r The unit quaternion r = r_z(yaw)*r_y(pitch)*r_x(roll) (ZYX roll-pitch-yaw angles),
      *        relative to the frame F_f. F_f is the base frame at the moment the robot entered
      *        STANDING, so r = 1 keeps the pose the robot had when STANDING started.
-     * @note Only called in STANDING and WALKING, if is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION), with the
+     * @note Only called in STANDING, if is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION), with the
      *       angles already clamped to get_base_orientation_limits().
      */
     virtual void set_target_base_orientation(const DQ& r) = 0;

@@ -115,7 +115,7 @@ is accepted in `get/status`. The driver starts in `IDLE`.
 |---|---|---|---|---|
 | `IDLE` | ignored (zero velocity sent) | ignored | ignored | ignored, the limbs hold still |
 | `STANDING` | ignored (zero velocity sent) | accepted, if supported | accepted, if supported | accepted by the commandable limbs |
-| `WALKING` | accepted | accepted, if supported | accepted, if supported | accepted by the commandable limbs |
+| `WALKING` | accepted | ignored | accepted, if supported | accepted by the commandable limbs |
 
 - In `IDLE`, the robot stays on and balancing. It never enters a damping mode or lies down, since it could fall.
 - The driver decides which limbs are commandable in each mode. For instance, the G1 arms accept targets in
