@@ -208,7 +208,7 @@ public:
 
     /**
      * @brief get_limb_names Returns the names of the limbs served by the driver, as reported on get/info.
-     * @return The names, e.g. {"left_leg", "right_leg", "waist", "left_arm", "right_arm"} for the
+     * @return The names, e.g. {"left_leg", "right_leg", "torso", "left_arm", "right_arm"} for the
      *         Unitree G1. Each limb is a standard SAS robot driver on \<prefix\>/\<name\>.
      * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/info was not received yet.
      */

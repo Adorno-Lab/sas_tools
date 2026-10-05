@@ -84,7 +84,7 @@ in the same way: by concatenating the joints of its limbs.
 
 | | Unitree G1 | Unitree B1 + Z1 |
 |---|---|---|
-| Limbs of the legged driver | `left_leg` 6, `right_leg` 6, `waist` 3, `left_arm` 7, `right_arm` 7 | `front_right` 3, `front_left` 3, `rear_right` 3, `rear_left` 3 |
+| Limbs of the legged driver | `left_leg` 6, `right_leg` 6, `torso` 3, `left_arm` 7, `right_arm` 7 | `front_right` 3, `front_left` 3, `rear_right` 3, `rear_left` 3 |
 | Limbs with their own driver | | `sas_z1/z1_1`: 6 |
 | Total | 29 joints | 18 joints |
 
@@ -115,7 +115,7 @@ is accepted in `get/status`. The driver starts in `IDLE`.
 |---|---|---|---|---|
 | `IDLE` | ignored (zero velocity sent) | ignored | ignored | ignored, the limbs hold still |
 | `STANDING` | ignored (zero velocity sent) | accepted, if supported | accepted, if supported | accepted by the commandable limbs |
-| `WALKING` | accepted | ignored | accepted, if supported | accepted by the commandable limbs |
+| `WALKING` | accepted | accepted, if supported | accepted, if supported | accepted by the commandable limbs |
 
 - In `IDLE`, the robot stays on and balancing. It never enters a damping mode or lies down, since it could fall.
 - The driver decides which limbs are commandable in each mode. For instance, the G1 arms accept targets in
@@ -217,7 +217,7 @@ parameters change:
 ```yaml
 # Unitree G1
 legged_robot_prefix: "sas_g1/g1_1"
-limb_prefixes: ["sas_g1/g1_1/left_leg", "sas_g1/g1_1/right_leg", "sas_g1/g1_1/waist",
+limb_prefixes: ["sas_g1/g1_1/left_leg", "sas_g1/g1_1/right_leg", "sas_g1/g1_1/torso",
                 "sas_g1/g1_1/left_arm", "sas_g1/g1_1/right_arm"]
 
 # Unitree B1 + Z1

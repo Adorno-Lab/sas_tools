@@ -31,7 +31,7 @@ class LeggedRobotDriverROS;
  *   - IDLE: the robot stays on and balancing; every target is ignored, the twist is zero,
  *     and the limbs hold still.
  *   - STANDING: the base orientation and the base height can be commanded; the robot cannot walk.
- *   - WALKING: the twist and the base height are accepted; the base orientation is not.
+ *   - WALKING: the twist, the base orientation, and the base height can be commanded.
  *   - In STANDING and WALKING, the limbs accept targets as decided by get_commandable_limbs().
  *
  * The driver starts in IDLE.
@@ -146,7 +146,7 @@ public:
      * @param r The unit quaternion r = r_z(yaw)*r_y(pitch)*r_x(roll) (ZYX roll-pitch-yaw angles),
      *        relative to the frame F_f. F_f is the base frame at the moment the robot entered
      *        STANDING, so r = 1 keeps the pose the robot had when STANDING started.
-     * @note Only called in STANDING, if is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION), with the
+     * @note Only called in STANDING and WALKING, if is_supported(LEGGED_FUNCTIONALITY::BASE_ORIENTATION), with the
      *       angles already clamped to get_base_orientation_limits().
      */
     virtual void set_target_base_orientation(const DQ& r) = 0;
@@ -230,7 +230,7 @@ public:
     virtual bool is_supported(const LEGGED_FUNCTIONALITY& functionality) const = 0;
 
     /**
-     * @brief get_limbs Returns the limbs served by this driver, e.g. "left_leg", "right_leg", "waist",
+     * @brief get_limbs Returns the limbs served by this driver, e.g. "left_leg", "right_leg", "torso",
      *        "left_arm", and "right_arm" for the Unitree G1, or the four legs for the Unitree B1 (whose
      *        Z1 arm runs its own driver). Every joint of the robot served by this driver must belong to
      *        exactly one limb. The list must not change during the lifetime of the driver:
@@ -245,7 +245,7 @@ public:
      *
      * The driver decides it per limb and per mode. For instance, in high-level control the Unitree G1
      * moves its legs with Unitree's own locomotion controller, so its legs never accept targets, while
-     * its arms and waist accept them in STANDING. A robot that can move its arms while walking (e.g.
+     * its torso and arms accept them in STANDING. A robot that can move its arms while walking (e.g.
      * the Unitree H1) marks its arms as commandable in WALKING as well.
      *
      * LeggedRobotDriverROS only forwards the targets of a commandable limb, ignores every limb in IDLE,
