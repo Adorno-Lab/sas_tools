@@ -26,7 +26,7 @@ struct LeggedRobotDriverROSConfiguration
  *   1. applies the new high-level mode and passes the commands accepted in the current mode
  *      to the driver (see LeggedRobotDriver::get_command_acceptance()),
  *   2. publishes get/imu and get/status (and get/info in the first iteration),
- *   3. steps one RobotDriverServer per LeggedRobotDriver::get_manipulators() entry, under <prefix>/<name>,
+ *   3. steps one RobotDriverServer per LeggedRobotDriver::get_manipulators() entry, under \<prefix\>/\<name\>,
  *   4. calls LeggedRobotDriver::extra_control_loop_step().
  *
  * Everything runs in the RobotDriverROS thread. Any exception ends the loop, and the whole robot stops.

@@ -57,7 +57,7 @@ public:
     /**
      * @brief A manipulator (e.g. an arm or the waist) served by this driver.
      *        LeggedRobotDriverROS exposes it with a standard RobotDriverServer
-     *        under <prefix>/<name>.
+     *        under \<prefix\>/\<name\>.
      */
     struct ManipulatorEntry
     {
@@ -242,8 +242,8 @@ public:
      * publishes it in get/status (commandable_joints), so a client knows which entries of its
      * target vector take effect.
      *
-     * @note This mask only applies to the joints of this driver (<prefix>/set/target_joint_positions).
-     *       Manipulators returned by get_manipulators() have their own topics under <prefix>/<name>
+     * @note This mask only applies to the joints of this driver (\<prefix\>/set/target_joint_positions).
+     *       Manipulators returned by get_manipulators() have their own topics under \<prefix\>/\<name\>
      *       and are not covered by it. On the G1, for example, the mask is all false and the arms
      *       and the waist are commanded through their manipulator topics instead.
      *

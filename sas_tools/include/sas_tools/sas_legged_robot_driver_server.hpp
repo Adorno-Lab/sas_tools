@@ -17,19 +17,19 @@ namespace sas
 {
 
 /**
- * @brief The LeggedRobotDriverServer class owns the legged robot topics under <prefix>/.
+ * @brief The LeggedRobotDriverServer class owns the legged robot topics under \<prefix\>/.
  *        It stores the latest commands and publishes the state it is given; it knows nothing
  *        about the robot. The joint topics are served by the standard RobotDriverServer.
  *
  *  Subscriptions (each accepts a single publisher; a second one makes the callback throw):
- *   - <prefix>/set/target_twist            geometry_msgs/TwistStamped (body frame)
- *   - <prefix>/set/high_level_mode         sas_legged_msgs/HighLevelMode
- *   - <prefix>/set/target_base_height      std_msgs/Float64 (meters)
- *   - <prefix>/set/target_base_orientation geometry_msgs/QuaternionStamped (relative to F_f)
+ *   - \<prefix\>/set/target_twist            geometry_msgs/TwistStamped (body frame)
+ *   - \<prefix\>/set/high_level_mode         sas_legged_msgs/HighLevelMode
+ *   - \<prefix\>/set/target_base_height      std_msgs/Float64 (meters)
+ *   - \<prefix\>/set/target_base_orientation geometry_msgs/QuaternionStamped (relative to F_f)
  *  Publishers:
- *   - <prefix>/get/imu                     sensor_msgs/Imu
- *   - <prefix>/get/status                  sas_legged_msgs/LeggedRobotStatus
- *   - <prefix>/get/info                    sas_legged_msgs/LeggedRobotInfo (transient_local)
+ *   - \<prefix\>/get/imu                     sensor_msgs/Imu
+ *   - \<prefix\>/get/status                  sas_legged_msgs/LeggedRobotStatus
+ *   - \<prefix\>/get/info                    sas_legged_msgs/LeggedRobotInfo (transient_local)
  */
 class LeggedRobotDriverServer
 {
@@ -67,67 +67,110 @@ private:
 public:
     LeggedRobotDriverServer() = delete;
     LeggedRobotDriverServer(const LeggedRobotDriverServer&) = delete;
+    /**
+     * @brief LeggedRobotDriverServer Creates the legged robot topics under @p topic_prefix.
+     * @param node The node on which the topics are created. The commands are only received while
+     *        the node is spun (LeggedRobotDriverROS spins it in its control loop).
+     * @param topic_prefix The prefix of the robot, e.g. "sas_g1/g1_1".
+     */
     LeggedRobotDriverServer(const std::shared_ptr<rclcpp::Node>& node, const std::string& topic_prefix);
 
+    // --- Commands received from the client ---
+
     /**
-     * @brief has_received_target_twist Returns true once at least one twist was received.
+     * @brief has_received_target_twist Returns true once at least one twist was received on
+     *        set/target_twist.
+     * @return True if a twist was received.
      */
     bool has_received_target_twist() const;
 
     /**
-     * @brief get_target_twist Returns the latest twist (angular + E_*linear, body frame).
+     * @brief get_target_twist Returns the latest twist received on set/target_twist. Unlike the other
+     *        commands, it is not consumed: the same twist is returned until a new one arrives. Use
+     *        get_seconds_since_last_target_twist() to know how old it is.
+     * @return The twist angular + E_*linear, expressed in the body frame. Zero if no twist was received.
      */
     DQ get_target_twist() const;
 
     /**
-     * @brief get_seconds_since_last_target_twist Returns the time since the latest twist arrived,
-     *        measured with a steady clock. Infinity if no twist was received.
+     * @brief get_seconds_since_last_target_twist Returns the time since the latest twist arrived on
+     *        set/target_twist, measured with a steady clock (it is not affected by changes of the
+     *        system clock or by the simulation time).
+     * @return The elapsed time, in seconds. Infinity if no twist was received.
      */
     double get_seconds_since_last_target_twist() const;
 
     /**
-     * @brief has_new_target_high_level_mode Returns true if a mode arrived since the last
-     *        call to get_target_high_level_mode().
+     * @brief has_new_target_high_level_mode Returns true if a mode arrived on set/high_level_mode since
+     *        the last call to get_target_high_level_mode().
+     * @return True if a new mode is waiting.
      */
     bool has_new_target_high_level_mode() const;
+
+    /**
+     * @brief get_target_high_level_mode Returns the latest mode received on set/high_level_mode, and
+     *        clears the flag of has_new_target_high_level_mode(). Invalid mode values are rejected
+     *        when they arrive, so the returned mode is always one of HIGH_LEVEL_MODE.
+     * @return The requested mode. IDLE if no mode was received.
+     */
     LeggedRobotDriver::HIGH_LEVEL_MODE get_target_high_level_mode();
 
     /**
-     * @brief has_new_target_base_height Returns true if a base height arrived since the last
-     *        call to get_target_base_height().
+     * @brief has_new_target_base_height Returns true if a base height arrived on set/target_base_height
+     *        since the last call to get_target_base_height().
+     * @return True if a new base height is waiting.
      */
     bool has_new_target_base_height() const;
+
+    /**
+     * @brief get_target_base_height Returns the latest base height received on set/target_base_height,
+     *        and clears the flag of has_new_target_base_height().
+     * @return The target height of the base with respect to the ground, in meters. Zero if no height
+     *         was received.
+     */
     double get_target_base_height();
 
     /**
-     * @brief has_new_target_base_orientation Returns true if a base orientation arrived since the
-     *        last call to get_target_base_orientation().
+     * @brief has_new_target_base_orientation Returns true if a base orientation arrived on
+     *        set/target_base_orientation since the last call to get_target_base_orientation().
+     * @return True if a new base orientation is waiting.
      */
     bool has_new_target_base_orientation() const;
 
     /**
-     * @brief get_target_base_orientation Returns the latest target base orientation (unit quaternion,
-     *        relative to F_f).
+     * @brief get_target_base_orientation Returns the latest base orientation received on
+     *        set/target_base_orientation, and clears the flag of has_new_target_base_orientation().
+     * @return A unit quaternion relative to F_f (the received quaternion is normalized; zero
+     *         quaternions are rejected when they arrive). DQ(1) if no orientation was received.
      */
     DQ get_target_base_orientation();
 
+    // --- State sent to the clients ---
+
     /**
-     * @brief send_imu Publishes get/imu.
-     * @param orientation Unit quaternion of the base orientation.
-     * @param angular_velocity Pure quaternion, in rad/s, body frame.
-     * @param linear_acceleration Pure quaternion, in m/s^2, body frame (with gravity).
+     * @brief send_imu Publishes the IMU state on get/imu.
+     * @param orientation Unit quaternion of the base orientation, in the IMU's own world frame.
+     * @param angular_velocity Pure quaternion, in rad/s, expressed in the body frame.
+     * @param linear_acceleration Pure quaternion, in m/s^2, expressed in the body frame (with gravity).
      */
     void send_imu(const DQ& orientation, const DQ& angular_velocity, const DQ& linear_acceleration);
 
     /**
-     * @brief send_status Publishes get/status.
+     * @brief send_status Publishes the current state of the driver on get/status.
+     * @param mode The current mode.
+     * @param commandable_joints One entry per joint of the robot: true if the joint takes
+     *        set/target_joint_positions in the current mode.
+     * @param acceptance The commands that take effect in the current mode.
      */
     void send_status(const LeggedRobotDriver::HIGH_LEVEL_MODE& mode,
                      const std::vector<bool>& commandable_joints,
                      const LeggedRobotDriver::CommandAcceptance& acceptance);
 
     /**
-     * @brief send_info Publishes get/info. Late subscribers also receive it (transient_local).
+     * @brief send_info Publishes the static description of the robot on get/info. The topic is
+     *        transient_local, so clients that connect later also receive the last description.
+     * @param info The description: joint names, supported modes and functionalities, and base
+     *        orientation limits.
      */
     void send_info(const sas_legged_msgs::msg::LeggedRobotInfo& info);
 };
