@@ -60,7 +60,7 @@ LeggedRobotDriver::CommandAcceptance LeggedRobotDriver::get_command_acceptance()
         break;
     case HIGH_LEVEL_MODE::WALKING:
         acceptance.twist            = is_supported(LEGGED_FUNCTIONALITY::TWIST);
-        acceptance.base_height      = is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT);
+        acceptance.base_height      = is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING);
         break;
     }
 

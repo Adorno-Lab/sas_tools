@@ -114,6 +114,7 @@ void LeggedRobotDriverROS::_send_info()
     info.supports_twist = legged_driver_->is_supported(F::TWIST);
     info.supports_base_height = legged_driver_->is_supported(F::BASE_HEIGHT);
     info.supports_base_orientation = legged_driver_->is_supported(F::BASE_ORIENTATION);
+    info.supports_base_height_while_walking = legged_driver_->is_supported(F::BASE_HEIGHT_WHILE_WALKING);
 
     const auto [min_rpy, max_rpy] = _get_base_orientation_limits();
     info.min_base_roll  = min_rpy(0);
