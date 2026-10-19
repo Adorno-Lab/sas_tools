@@ -31,7 +31,8 @@ class LeggedRobotDriverROS;
  *   - IDLE: the robot stays on and balancing; every target is ignored, the twist is zero,
  *     and the limbs hold still.
  *   - STANDING: the base orientation and the base height can be commanded; the robot cannot walk.
- *   - WALKING: the twist and the base height are accepted; the base orientation is not.
+ *   - WALKING: the twist is accepted, and the base height if the robot supports it while walking
+ *     (LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING); the base orientation is not.
  *   - In STANDING and WALKING, the limbs accept targets as decided by get_commandable_limbs().
  *
  * The driver starts in IDLE.
@@ -53,8 +54,9 @@ public:
      */
     enum class LEGGED_FUNCTIONALITY{
         TWIST=0,
-        BASE_HEIGHT,
-        BASE_ORIENTATION,
+        BASE_HEIGHT,                ///< The base height can be commanded in STANDING.
+        BASE_ORIENTATION,           ///< The base orientation can be commanded in STANDING.
+        BASE_HEIGHT_WHILE_WALKING,  ///< The base height can also be commanded in WALKING.
     };
 
     /**
@@ -154,7 +156,8 @@ public:
     /**
      * @brief set_target_base_height Sets the desired base height with respect to the ground.
      * @param base_height Target height in meters
-     * @note Only called in STANDING and WALKING, if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT).
+     * @note Only called in STANDING, if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT), and in WALKING,
+     *       if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING).
      */
     virtual void set_target_base_height(const double& base_height) = 0;
 

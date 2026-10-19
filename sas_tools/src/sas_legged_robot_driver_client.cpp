@@ -229,6 +229,7 @@ bool LeggedRobotDriverClient::is_supported(const LeggedRobotDriver::LEGGED_FUNCT
     case LeggedRobotDriver::LEGGED_FUNCTIONALITY::TWIST:             return info_.supports_twist;
     case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT:       return info_.supports_base_height;
     case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_ORIENTATION:  return info_.supports_base_orientation;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING: return info_.supports_base_height_while_walking;
     }
     return false;
 }

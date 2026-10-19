@@ -9,8 +9,9 @@ LimbInfo[] limbs
 uint8[] supported_modes
 
 bool supports_twist
-bool supports_base_height
-bool supports_base_orientation
+bool supports_base_height                # In STANDING.
+bool supports_base_orientation           # In STANDING.
+bool supports_base_height_while_walking  # In WALKING.
 
 # Limits of set/target_base_orientation, in radians, as ZYX roll-pitch-yaw angles relative
 # to the frame F_f (see set/target_base_orientation). Each angle is clamped to [min, max];

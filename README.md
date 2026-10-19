@@ -115,13 +115,16 @@ is accepted in `get/status`. The driver starts in `IDLE`.
 |---|---|---|---|---|
 | `IDLE` | ignored (zero velocity sent) | ignored | ignored | ignored, the limbs hold still |
 | `STANDING` | ignored (zero velocity sent) | accepted, if supported | accepted, if supported | accepted by the commandable limbs |
-| `WALKING` | accepted | ignored | accepted, if supported | accepted by the commandable limbs |
+| `WALKING` | accepted | ignored | accepted, if supported while walking | accepted by the commandable limbs |
 
 - In `IDLE`, the robot stays on and balancing. It never enters a damping mode or lies down, since it could fall.
 - The driver decides which limbs are commandable in each mode. For instance, the G1 arms accept targets in
   `STANDING` only, whereas a robot that can move its arms while walking (e.g. the H1) also accepts them in
   `WALKING`.
 - If no twist arrives within `twist_timeout_sec` (0.2 s by default), a zero twist is sent.
+- The base height is supported separately in `STANDING` (`LEGGED_FUNCTIONALITY::BASE_HEIGHT`) and in `WALKING`
+  (`LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING`), since some robots (e.g. the B1) only change their height
+  while standing. Both are published in `get/info`.
 - Each driver manages its own mode changes (e.g. stopping before switching from `WALKING` to `STANDING`).
 
 ### Base orientation
