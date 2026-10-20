@@ -17,6 +17,7 @@
 #include <thread>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
+#include <sas_msgs/msg/bool.hpp>
 #include <sas_robot_driver/sas_robot_driver_client.hpp>
 #include <sas_tools/sas_legged_robot_driver_client.hpp>
 
@@ -47,6 +48,9 @@ struct ClientWindowConfiguration
     double max_wz{0.2};                                 ///< ... and [-max_wz, max_wz] rad/s.
     double watchdog_period_in_seconds{1.0};             ///< Initial position of the period slider (rounded to 1-5 s).
     double watchdog_maximum_acceptable_delay_in_seconds{0.5};
+    // The emergency stop also publishes on this topic (e.g. the one of the emergency stop of the lab, to which the
+    // launch files of the drivers remap their set/shutdown). Empty: only the set/shutdown of each driver.
+    std::string shutdown_topic{"/sas/set/shutdown"};
 };
 
 /**
@@ -156,6 +160,7 @@ private:
 
     QGridLayout* layout_limbs_{nullptr};
     QPushButton* button_emergency_stop_{nullptr};
+    rclcpp::Publisher<sas_msgs::msg::Bool>::SharedPtr publisher_shutdown_;
 
     //---------- Watchdog --------------------------------------------------------//
     QPushButton* button_watchdog_{nullptr};

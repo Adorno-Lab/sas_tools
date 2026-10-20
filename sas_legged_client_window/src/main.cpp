@@ -39,6 +39,8 @@ void sig_int_handler(int)
  *     (1 to 5 s, rounded).
  *   - watchdog_maximum_acceptable_delay_in_seconds (double, default 0.5): sent with the watchdog triggers.
  *   The driver fixes the period and the maximum acceptable delay at the first trigger.
+ *   - shutdown_topic (string, default "/sas/set/shutdown"): the emergency stop also publishes on it (the topic of the
+ *     emergency stop of the lab, to which the launch files of the drivers remap their set/shutdown). "" to disable.
  */
 int main(int argc, char *argv[])
 {
@@ -60,6 +62,7 @@ int main(int argc, char *argv[])
     configuration.watchdog_period_in_seconds = node->declare_parameter<double>("watchdog_period_in_seconds", 1.0);
     configuration.watchdog_maximum_acceptable_delay_in_seconds =
         node->declare_parameter<double>("watchdog_maximum_acceptable_delay_in_seconds", 0.5);
+    configuration.shutdown_topic = node->declare_parameter<std::string>("shutdown_topic", "/sas/set/shutdown");
 
     if (mode == "control")
         configuration.mode = ClientWindowConfiguration::MODE::CONTROL;
@@ -85,7 +88,8 @@ int main(int argc, char *argv[])
     RCLCPP_INFO_STREAM(node->get_logger(), "::legged_robot_prefix " << configuration.legged_robot_prefix
                                            << ", own_driver_limb_prefixes [ " << own_driver_limb_prefixes << "]"
                                            << ", mode " << mode
-                                           << ", watchdog period " << configuration.watchdog_period_in_seconds << " s");
+                                           << ", watchdog period " << configuration.watchdog_period_in_seconds << " s"
+                                           << ", shutdown_topic \"" << configuration.shutdown_topic << "\"");
 
     int result = 0;
     {

@@ -22,6 +22,8 @@ def generate_launch_description():
                               description='"control" (commands the robot) or "monitor" (only reads it).'),
         DeclareLaunchArgument('watchdog_period_in_seconds', default_value='1.0'),
         DeclareLaunchArgument('watchdog_maximum_acceptable_delay_in_seconds', default_value='0.5'),
+        DeclareLaunchArgument('shutdown_topic', default_value='/sas/set/shutdown',
+                              description='The emergency stop also publishes on it (empty string to disable).'),
         Node(
             package='sas_legged_client_window',
             executable='sas_legged_client_window',
@@ -33,6 +35,7 @@ def generate_launch_description():
                 'watchdog_period_in_seconds': ParameterValue(LaunchConfiguration('watchdog_period_in_seconds'), value_type=float),
                 'watchdog_maximum_acceptable_delay_in_seconds':
                     ParameterValue(LaunchConfiguration('watchdog_maximum_acceptable_delay_in_seconds'), value_type=float),
+                'shutdown_topic': ParameterValue(LaunchConfiguration('shutdown_topic'), value_type=str),
             }]
         ),
     ])

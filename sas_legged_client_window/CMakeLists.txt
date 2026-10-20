@@ -15,6 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(sas_core REQUIRED)
+find_package(sas_msgs REQUIRED)
 find_package(sas_robot_driver REQUIRED)
 find_package(sas_tools REQUIRED)
 
@@ -28,6 +29,7 @@ ament_target_dependencies(${PROJECT_NAME}
     rclcpp
     Eigen3
     sas_core
+    sas_msgs
     sas_robot_driver
     sas_tools
 )

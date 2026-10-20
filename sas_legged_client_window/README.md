@@ -30,7 +30,8 @@ ros2 run sas_legged_client_window sas_legged_client_window --ros-args -p legged_
 | `mode` | `control` | `control`: the window commands the robot. `monitor`: it only reads the robot (the command topics are not created), so that it can run next to the controller |
 | `max_vx`, `max_vy`, `max_wz` | `0.2`, `0.1`, `0.2` | Ranges of the twist sliders, in m/s and rad/s (conservative, for testing) |
 | `watchdog_period_in_seconds` | `1.0` | Initial period of the watchdog, in the period slider (1 to 5 s, rounded) |
-| `watchdog_maximum_acceptable_delay_in_seconds` | `0.5` | Maximum acceptable delay of the triggers. The driver fixes it at the first trigger |
+| `watchdog_maximum_acceptable_delay_in_seconds` | `0.5` | Maximum acceptable delay of the triggers. The driver fixes it at the first trigger. Across computers whose clocks are not synchronized, use a large value |
+| `shutdown_topic` | `/sas/set/shutdown` | The emergency stop also publishes on this topic: the one of the emergency stop of the lab, to which the launch files of the drivers remap their `set/shutdown`. Empty string to disable |
 
 The launch file has the same arguments, except the ranges of the twist sliders.
 
@@ -50,7 +51,9 @@ The launch file has the same arguments, except the ranges of the twist sliders.
 - The limbs of the legged driver accept targets when the driver says so (`get/status`). A limb with its own driver
   does not know the mode of the base, so it only accepts targets while its *Allow commands* box is checked. While a
   limb does not accept targets, its sliders follow the measured positions, so that the first drag starts from there.
-- `EMERGENCY STOP` sends the shutdown signal to the legged driver and to every limb with its own driver.
+- `EMERGENCY STOP` sends the shutdown signal to the legged driver and to every limb with its own driver, and on
+  `shutdown_topic` (`/sas/set/shutdown`), which stops every driver whose `set/shutdown` is remapped there (e.g. the B1
+  and the Z1), on the same `ROS_DOMAIN_ID`.
 - The period of the watchdog is chosen with its slider, from 1 to 5 s, before it starts: the driver fixes it at the
   first trigger, so the slider is disabled once the watchdog runs.
 - `START WATCHDOG` (after a confirmation) sends watchdog triggers to the legged driver and to every limb with its own

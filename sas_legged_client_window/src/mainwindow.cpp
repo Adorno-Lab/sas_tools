@@ -52,6 +52,8 @@ MainWindow::MainWindow(const std::shared_ptr<rclcpp::Node> &node,
         blacklist_.push_back(MODE_BLACKLIST_FLAG::JOINT_CONTROL);
 
     legged_client_ = std::make_shared<sas::LeggedRobotDriverClient>(node_, configuration_.legged_robot_prefix, blacklist_);
+    if (!configuration_.shutdown_topic.empty())
+        publisher_shutdown_ = node_->create_publisher<sas_msgs::msg::Bool>(configuration_.shutdown_topic, 1);
 
     // The limbs with their own driver are known from the configuration; their widgets are built once their
     // joint states arrive. The limbs of the legged driver are created from get/info.
@@ -106,7 +108,9 @@ void MainWindow::_build_ui()
     layout_top->addWidget(_build_mode_group(), 1);
     button_emergency_stop_ = new QPushButton("EMERGENCY\nSTOP", central);
     button_emergency_stop_->setObjectName("button_emergency_stop");
-    button_emergency_stop_->setToolTip("Sends the shutdown signal to the legged driver and to every limb with its own driver.");
+    button_emergency_stop_->setToolTip(QString("Sends the shutdown signal to the legged driver, to every limb with its own "
+                                               "driver, and on %1.").arg(configuration_.shutdown_topic.empty() ?
+                                                                         "no other topic" : configuration_.shutdown_topic.c_str()));
     button_emergency_stop_->setMinimumSize(160, 90);
     button_emergency_stop_->setStyleSheet("QPushButton { background-color: #c62828; color: white; font-weight: bold; font-size: 16px; }");
     connect(button_emergency_stop_, &QPushButton::clicked, this, [this]() { _on_emergency_stop_clicked(); });
@@ -884,13 +888,20 @@ void MainWindow::_watchdog_loop()
 void MainWindow::_on_emergency_stop_clicked()
 {
     // send_shutdown_signal() is available whatever the blacklist. The limbs with their own driver are separate
-    // drivers, so the shutdown of the legged driver does not reach them.
+    // drivers, so the shutdown of the legged driver does not reach them. The drivers whose set/shutdown is remapped
+    // (e.g. to the emergency stop of the lab) only receive it on shutdown_topic.
     try
     {
         legged_client_->send_shutdown_signal();
         for (const auto& limb : limbs_)
             if (limb.own_driver)
                 limb.client->send_shutdown_signal();
+        if (publisher_shutdown_)
+        {
+            sas_msgs::msg::Bool msg;
+            msg.data = true;
+            publisher_shutdown_->publish(msg);
+        }
         statusBar()->showMessage("Shutdown signal sent.");
     }
     catch (const std::exception& e)
