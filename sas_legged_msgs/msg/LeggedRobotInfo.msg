@@ -12,6 +12,7 @@ bool supports_twist
 bool supports_base_height                # In STANDING.
 bool supports_base_orientation           # In STANDING.
 bool supports_base_height_while_walking  # In WALKING.
+bool supports_measured_twist             # The measured twist of the base is published on get/twist.
 
 # Limits of set/target_base_orientation, in radians, as ZYX roll-pitch-yaw angles relative
 # to the frame F_f (see set/target_base_orientation). Each angle is clamped to [min, max];

@@ -57,6 +57,7 @@ public:
         BASE_HEIGHT,                ///< The base height can be commanded in STANDING.
         BASE_ORIENTATION,           ///< The base orientation can be commanded in STANDING.
         BASE_HEIGHT_WHILE_WALKING,  ///< The base height can also be commanded in WALKING.
+        MEASURED_TWIST,             ///< The robot measures the twist of its base (see get_measured_twist()).
     };
 
     /**
@@ -199,6 +200,17 @@ public:
      *         estimate of the base's inertial acceleration.
      */
     virtual DQ get_linear_acceleration() = 0;
+
+    /**
+     * @brief get_measured_twist Returns the twist of the base as measured or estimated by the robot (e.g. the
+     *        legged odometry of its locomotion controller, which fuses the leg kinematics with the IMU). Unlike
+     *        the IMU, it includes the linear velocity, which an estimator cannot obtain by integrating the
+     *        accelerometer. It is a state reading, valid in every mode, like the IMU.
+     * @return The twist angular + E_*linear, expressed in the body frame (angular in rad/s, linear in m/s).
+     * @note Only called if is_supported(LEGGED_FUNCTIONALITY::MEASURED_TWIST). The default implementation
+     *       returns DQ(0), which is correct only for robots that do not support it.
+     */
+    virtual DQ get_measured_twist();
 
     // --- High-level mode ---
 

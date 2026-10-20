@@ -116,6 +116,7 @@ void LeggedRobotDriverROS::_send_info()
     info.supports_base_height = legged_driver_->is_supported(F::BASE_HEIGHT);
     info.supports_base_orientation = legged_driver_->is_supported(F::BASE_ORIENTATION);
     info.supports_base_height_while_walking = legged_driver_->is_supported(F::BASE_HEIGHT_WHILE_WALKING);
+    info.supports_measured_twist = legged_driver_->is_supported(F::MEASURED_TWIST);
 
     const auto [min_rpy, max_rpy] = _get_base_orientation_limits();
     info.min_base_roll  = min_rpy(0);
@@ -161,6 +162,9 @@ void LeggedRobotDriverROS::_legged_step(const LeggedRobotDriver::CommandAcceptan
         legged_server_.send_imu(orientation,
                                 legged_driver_->get_angular_velocity(),
                                 legged_driver_->get_linear_acceleration());
+
+    if (legged_driver_->is_supported(LeggedRobotDriver::LEGGED_FUNCTIONALITY::MEASURED_TWIST))
+        legged_server_.send_measured_twist(legged_driver_->get_measured_twist());
 
     legged_server_.send_status(legged_driver_->get_high_level_mode(), acceptance);
 }

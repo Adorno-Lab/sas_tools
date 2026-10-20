@@ -23,7 +23,7 @@ namespace sas
  *        the same MODE_BLACKLIST_FLAG:
  *   - JOINT_CONTROL also creates the legged command publishers (twist, mode, base height and
  *     orientation). Only one client per robot may use it.
- *   - JOINT_MONITORING also creates the legged state subscriptions (get/imu, get/status, get/info).
+ *   - JOINT_MONITORING also creates the legged state subscriptions (get/imu, get/twist, get/status, get/info).
  *   - WATCHDOG_CONTROL is unchanged (set/watchdog_trigger). Only one client per robot may use it.
  *
  * Methods of a blacklisted mode throw std::runtime_error, as in RobotDriverClient.
@@ -50,6 +50,10 @@ private:
     DQ linear_acceleration_{0};
     bool imu_received_{false};
 
+    rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr subscriber_measured_twist_;
+    DQ measured_twist_{0};
+    bool measured_twist_received_{false};
+
     rclcpp::Subscription<sas_legged_msgs::msg::LeggedRobotStatus>::SharedPtr subscriber_status_;
     sas_legged_msgs::msg::LeggedRobotStatus status_;
     bool status_received_{false};
@@ -65,6 +69,7 @@ private:
     std::size_t _limb_index(const std::string& limb_name, const std::string& function) const;
 
     void _callback_imu(const sensor_msgs::msg::Imu& msg);
+    void _callback_measured_twist(const geometry_msgs::msg::TwistStamped& msg);
     void _callback_status(const sas_legged_msgs::msg::LeggedRobotStatus& msg);
     void _callback_info(const sas_legged_msgs::msg::LeggedRobotInfo& msg);
 
@@ -156,6 +161,14 @@ public:
      * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/imu was not received yet.
      */
     DQ get_linear_acceleration() const;
+
+    /**
+     * @brief get_measured_twist Returns the latest measured twist of the base reported on get/twist (only
+     *        published by robots that support LEGGED_FUNCTIONALITY::MEASURED_TWIST).
+     * @return The twist angular + E_*linear, expressed in the body frame (angular in rad/s, linear in m/s).
+     * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/twist was not received yet.
+     */
+    DQ get_measured_twist() const;
 
     /**
      * @brief get_high_level_mode Returns the current mode of the robot, as reported on get/status.

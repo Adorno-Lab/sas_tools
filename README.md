@@ -60,6 +60,7 @@ Base topics, under `<prefix>/`:
 | `get/info` | `sas_legged_msgs/LeggedRobotInfo` (transient_local) | server → client | `JOINT_MONITORING` |
 | `get/status` | `sas_legged_msgs/LeggedRobotStatus` | server → client | `JOINT_MONITORING` |
 | `get/imu` | `sensor_msgs/Imu` | server → client | `JOINT_MONITORING` |
+| `get/twist` | `geometry_msgs/TwistStamped` | server → client | `JOINT_MONITORING` |
 | `set/high_level_mode` | `sas_legged_msgs/HighLevelMode` | client → server | `JOINT_CONTROL` |
 | `set/target_twist` | `geometry_msgs/TwistStamped` | client → server | `JOINT_CONTROL` |
 | `set/target_base_height` | `std_msgs/Float64` | client → server | `JOINT_CONTROL` |
@@ -142,6 +143,13 @@ keeps the pose the robot had when `STANDING` started. `LeggedRobotDriverROS` cla
 limits of the robot, which do not need to be symmetric and are published in `get/info`.
 
 `get/imu` reports the raw IMU orientation instead, in the IMU's own world frame (its yaw can drift).
+
+### Measured twist
+
+`get/twist` reports the twist of the base as measured or estimated by the robot (e.g. the legged odometry of its
+locomotion controller), in the body frame. It is optional: only robots that support
+`LEGGED_FUNCTIONALITY::MEASURED_TWIST` (`supports_measured_twist` in `get/info`) publish it. Unlike `get/imu`, it
+includes the linear velocity of the base, which a pose estimator cannot obtain by integrating the accelerometer.
 
 ## Usage
 

@@ -157,6 +157,7 @@ private:
     QLabel* label_rpy_{nullptr};
     QLabel* label_gyroscope_{nullptr};
     QLabel* label_accelerometer_{nullptr};
+    QLabel* label_measured_twist_{nullptr};
 
     QGridLayout* layout_limbs_{nullptr};
     QPushButton* button_emergency_stop_{nullptr};
