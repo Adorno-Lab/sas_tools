@@ -28,6 +28,8 @@ LeggedRobotDriverClient::LeggedRobotDriverClient(const std::shared_ptr<rclcpp::N
     {
         subscriber_imu_ = node_->create_subscription<sensor_msgs::msg::Imu>(
             topic_prefix_ + "/get/imu", 1, std::bind(&LeggedRobotDriverClient::_callback_imu, this, _1));
+        subscriber_measured_twist_ = node_->create_subscription<geometry_msgs::msg::TwistStamped>(
+            topic_prefix_ + "/get/twist", 1, std::bind(&LeggedRobotDriverClient::_callback_measured_twist, this, _1));
         subscriber_status_ = node_->create_subscription<sas_legged_msgs::msg::LeggedRobotStatus>(
             topic_prefix_ + "/get/status", 1, std::bind(&LeggedRobotDriverClient::_callback_status, this, _1));
         subscriber_info_ = node_->create_subscription<sas_legged_msgs::msg::LeggedRobotInfo>(
@@ -67,6 +69,14 @@ void LeggedRobotDriverClient::_callback_imu(const sensor_msgs::msg::Imu &msg)
     angular_velocity_ = DQ(0, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z);
     linear_acceleration_ = DQ(0, msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z);
     imu_received_ = true;
+}
+
+void LeggedRobotDriverClient::_callback_measured_twist(const geometry_msgs::msg::TwistStamped &msg)
+{
+    _check_exclusive_publisher(topic_prefix_ + "/get/twist");
+    measured_twist_ = DQ(0, msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z) +
+                      E_*DQ(0, msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z);
+    measured_twist_received_ = true;
 }
 
 void LeggedRobotDriverClient::_callback_status(const sas_legged_msgs::msg::LeggedRobotStatus &msg)
@@ -132,6 +142,12 @@ void LeggedRobotDriverClient::send_target_base_orientation(const DQ &r)
 void LeggedRobotDriverClient::send_target_base_orientation_rpy(const double &roll, const double &pitch, const double &yaw)
 {
     send_target_base_orientation(rpy_to_unit_quaternion(roll, pitch, yaw));
+}
+
+DQ LeggedRobotDriverClient::get_measured_twist() const
+{
+    _check_received(measured_twist_received_, "get/twist", __FUNCTION__);
+    return measured_twist_;
 }
 
 DQ LeggedRobotDriverClient::get_orientation() const
@@ -230,6 +246,7 @@ bool LeggedRobotDriverClient::is_supported(const LeggedRobotDriver::LEGGED_FUNCT
     case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT:       return info_.supports_base_height;
     case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_ORIENTATION:  return info_.supports_base_orientation;
     case LeggedRobotDriver::LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING: return info_.supports_base_height_while_walking;
+    case LeggedRobotDriver::LEGGED_FUNCTIONALITY::MEASURED_TWIST:    return info_.supports_measured_twist;
     }
     return false;
 }

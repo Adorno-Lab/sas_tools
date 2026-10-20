@@ -5,7 +5,8 @@ would: it only uses `LeggedRobotDriverClient` for the base and one `RobotDriverC
 supported modes, and the limits of the base are read from `get/info`, so the same window works with any robot that
 follows the standard.
 
-It shows the status, the high-level mode, the IMU, and the joint states of every limb. It has the mode buttons,
+It shows the status, the high-level mode, the IMU, the measured twist (if the robot publishes it), and the joint
+states of every limb. It has the mode buttons,
 sliders for the twist and for the base pose (orientation and height), sliders for the limbs that accept targets, an
 emergency stop, and a watchdog.
 
@@ -33,7 +34,8 @@ ros2 run sas_legged_client_window sas_legged_client_window --ros-args -p legged_
 | `watchdog_maximum_acceptable_delay_in_seconds` | `0.5` | Maximum acceptable delay of the triggers. The driver fixes it at the first trigger. Across computers whose clocks are not synchronized, use a large value |
 | `shutdown_topic` | `/sas/set/shutdown` | The emergency stop also publishes on this topic: the one of the emergency stop of the lab, to which the launch files of the drivers remap their `set/shutdown`. Empty string to disable |
 
-The launch file has the same arguments, except the ranges of the twist sliders.
+The launch file has the same arguments, except the ranges of the twist sliders, plus `node_name`: to run several
+windows (e.g. one per robot), give each one its own name.
 
 ## Behaviour
 

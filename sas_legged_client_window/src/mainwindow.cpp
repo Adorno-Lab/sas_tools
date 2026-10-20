@@ -302,12 +302,13 @@ QGroupBox *MainWindow::_build_base_pose_group()
 
 QGroupBox *MainWindow::_build_imu_group()
 {
-    auto group = new QGroupBox("IMU (get/imu)", this);
+    auto group = new QGroupBox("Base state (get/imu, get/twist)", this);
     auto layout = new QGridLayout(group);
     label_quaternion_ = new QLabel("-", group);
     label_rpy_ = new QLabel("-", group);
     label_gyroscope_ = new QLabel("-", group);
     label_accelerometer_ = new QLabel("-", group);
+    label_measured_twist_ = new QLabel("-", group);
     layout->addWidget(new QLabel("Orientation (w, x, y, z):", group), 0, 0);
     layout->addWidget(label_quaternion_, 0, 1);
     layout->addWidget(new QLabel("Roll, pitch, yaw (deg):", group), 1, 0);
@@ -316,6 +317,8 @@ QGroupBox *MainWindow::_build_imu_group()
     layout->addWidget(label_gyroscope_, 2, 1);
     layout->addWidget(new QLabel("Linear acceleration (m/s²):", group), 3, 0);
     layout->addWidget(label_accelerometer_, 3, 1);
+    layout->addWidget(new QLabel("Measured twist (vx, vy, wz):", group), 4, 0);
+    layout->addWidget(label_measured_twist_, 4, 1);
     layout->setColumnStretch(1, 1);
     return group;
 }
@@ -563,6 +566,22 @@ void MainWindow::_update_imu()
     label_gyroscope_->setText(_format(w(0)) + ", " + _format(w(1)) + ", " + _format(w(2)));
     const VectorXd a = linear_acceleration.vec3();
     label_accelerometer_->setText(_format(a(0)) + ", " + _format(a(1)) + ", " + _format(a(2)));
+
+    // Optional: only robots that support LEGGED_FUNCTIONALITY::MEASURED_TWIST publish get/twist.
+    if (!legged_client_->is_supported(sas::LeggedRobotDriver::LEGGED_FUNCTIONALITY::MEASURED_TWIST))
+    {
+        label_measured_twist_->setText("not supported");
+        return;
+    }
+    try
+    {
+        const VectorXd v = legged_client_->get_measured_twist().vec6();  // {wx, wy, wz, vx, vy, vz}
+        label_measured_twist_->setText(_format(v(3)) + " m/s, " + _format(v(4)) + " m/s, " + _format(v(2)) + " rad/s");
+    }
+    catch (const std::runtime_error&)
+    {
+        label_measured_twist_->setText("-");  // Nothing received on get/twist yet.
+    }
 }
 
 void MainWindow::_create_legged_limbs()

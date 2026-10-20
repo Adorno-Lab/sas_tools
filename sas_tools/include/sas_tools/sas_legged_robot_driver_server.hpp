@@ -28,6 +28,7 @@ namespace sas
  *   - \<prefix\>/set/target_base_orientation geometry_msgs/QuaternionStamped (relative to F_f)
  *  Publishers:
  *   - \<prefix\>/get/imu                     sensor_msgs/Imu
+ *   - \<prefix\>/get/twist                   geometry_msgs/TwistStamped (measured, body frame; only if supported)
  *   - \<prefix\>/get/status                  sas_legged_msgs/LeggedRobotStatus
  *   - \<prefix\>/get/info                    sas_legged_msgs/LeggedRobotInfo (transient_local)
  */
@@ -55,6 +56,7 @@ private:
     bool new_target_base_orientation_{false};
 
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher_imu_;
+    rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr publisher_measured_twist_;
     rclcpp::Publisher<sas_legged_msgs::msg::LeggedRobotStatus>::SharedPtr publisher_status_;
     rclcpp::Publisher<sas_legged_msgs::msg::LeggedRobotInfo>::SharedPtr publisher_info_;
 
@@ -154,6 +156,12 @@ public:
      * @param linear_acceleration Pure quaternion, in m/s^2, expressed in the body frame (with gravity).
      */
     void send_imu(const DQ& orientation, const DQ& angular_velocity, const DQ& linear_acceleration);
+
+    /**
+     * @brief send_measured_twist Publishes the measured twist of the base on get/twist.
+     * @param twist The twist angular + E_*linear, expressed in the body frame.
+     */
+    void send_measured_twist(const DQ& twist);
 
     /**
      * @brief send_status Publishes the current state of the driver on get/status.

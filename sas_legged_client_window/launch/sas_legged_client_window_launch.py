@@ -14,6 +14,8 @@ from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument('node_name', default_value='sas_legged_client_window',
+                              description='Name of the node: give each window its own name to run several.'),
         DeclareLaunchArgument('legged_robot_prefix', default_value='sas_b1/b1_1',
                               description='Topic prefix of the legged robot driver, e.g. sas_g1/g1_1.'),
         DeclareLaunchArgument('own_driver_limb_prefixes', default_value='[]',
@@ -27,6 +29,7 @@ def generate_launch_description():
         Node(
             package='sas_legged_client_window',
             executable='sas_legged_client_window',
+            name=LaunchConfiguration('node_name'),
             output='screen',
             parameters=[{
                 'legged_robot_prefix': ParameterValue(LaunchConfiguration('legged_robot_prefix'), value_type=str),
