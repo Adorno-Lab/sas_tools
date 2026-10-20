@@ -35,8 +35,10 @@ void sig_int_handler(int)
  *   - mode (string, default "control"): "control" (the window commands the robot) or "monitor" (it only reads
  *     the robot, so that it can run next to the controller; the emergency stop and the watchdog still work).
  *   - max_vx, max_vy, max_wz (double, defaults 0.2 m/s, 0.1 m/s, 0.2 rad/s): ranges of the twist sliders.
- *   - watchdog_period_in_seconds (double, default 1.0), watchdog_maximum_acceptable_delay_in_seconds (double,
- *     default 0.5): sent with the watchdog triggers. The driver fixes them at the first trigger.
+ *   - watchdog_period_in_seconds (double, default 1.0): initial position of the period slider of the watchdog
+ *     (1 to 5 s, rounded).
+ *   - watchdog_maximum_acceptable_delay_in_seconds (double, default 0.5): sent with the watchdog triggers.
+ *   The driver fixes the period and the maximum acceptable delay at the first trigger.
  */
 int main(int argc, char *argv[])
 {

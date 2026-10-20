@@ -40,7 +40,10 @@ MainWindow::MainWindow(const std::shared_ptr<rclcpp::Node> &node,
     node_{node},
     configuration_{configuration},
     break_loops_{break_loops},
-    monitor_only_{configuration.mode == ClientWindowConfiguration::MODE::MONITOR}
+    monitor_only_{configuration.mode == ClientWindowConfiguration::MODE::MONITOR},
+    watchdog_period_in_seconds_{std::clamp(std::round(configuration.watchdog_period_in_seconds),
+                                           static_cast<double>(min_watchdog_period_in_seconds_),
+                                           static_cast<double>(max_watchdog_period_in_seconds_))}
 {
     // The watchdog has its own clients (see _on_start_watchdog_clicked()). In monitor mode, the command topics are
     // not created either, so this window can run next to the controller of the robot.
@@ -117,7 +120,28 @@ void MainWindow::_build_ui()
     connect(button_watchdog_, &QPushButton::clicked, this, [this]() { _on_start_watchdog_clicked(); });
     label_watchdog_ = new QLabel("Watchdog: off", central);
     label_watchdog_->setAlignment(Qt::AlignCenter);
+
+    auto layout_watchdog_period = new QHBoxLayout();
+    slider_watchdog_period_ = new QSlider(Qt::Horizontal, central);
+    slider_watchdog_period_->setObjectName("slider_watchdog_period");
+    slider_watchdog_period_->setToolTip("Period of the watchdog. The driver fixes it at the first trigger, so it cannot "
+                                        "be changed once the watchdog starts.");
+    slider_watchdog_period_->setRange(min_watchdog_period_in_seconds_, max_watchdog_period_in_seconds_);
+    slider_watchdog_period_->setSingleStep(1);
+    slider_watchdog_period_->setPageStep(1);
+    slider_watchdog_period_->setTickInterval(1);
+    slider_watchdog_period_->setTickPosition(QSlider::TicksBelow);
+    slider_watchdog_period_->setValue(static_cast<int>(watchdog_period_in_seconds_));
+    label_watchdog_period_ = new QLabel(QString("Period: %1 s").arg(watchdog_period_in_seconds_), central);
+    connect(slider_watchdog_period_, &QSlider::valueChanged, this, [this](int value) {
+        watchdog_period_in_seconds_ = value;
+        label_watchdog_period_->setText(QString("Period: %1 s").arg(value));
+    });
+    layout_watchdog_period->addWidget(label_watchdog_period_);
+    layout_watchdog_period->addWidget(slider_watchdog_period_);
+
     layout_watchdog->addWidget(button_watchdog_);
+    layout_watchdog->addLayout(layout_watchdog_period);
     layout_watchdog->addWidget(label_watchdog_);
     layout_top->addLayout(layout_watchdog);
     layout_top->addWidget(button_emergency_stop_);
@@ -799,7 +823,7 @@ void MainWindow::_on_start_watchdog_clicked()
         text += QString(" and %1").arg(prefix.c_str());
     text += QString(" (period %1 s, maximum acceptable delay %2 s)?\n\n"
                     "It cannot be stopped: when this window closes, the triggers stop and the drivers stop the robot.")
-                .arg(configuration_.watchdog_period_in_seconds).arg(configuration_.watchdog_maximum_acceptable_delay_in_seconds);
+                .arg(watchdog_period_in_seconds_).arg(configuration_.watchdog_maximum_acceptable_delay_in_seconds);
     if (!monitor_only_)
         text += "\n\nThis window also commands the robot (control mode), so the watchdog only detects that the "
                 "window stopped. To watch a controller, run a second window in monitor mode.";
@@ -823,25 +847,29 @@ void MainWindow::_on_start_watchdog_clicked()
         return;
     }
 
+    // The period is fixed from now on (the driver fixes it at the first trigger).
+    slider_watchdog_period_->setEnabled(false);
     watchdog_running_ = true;
     watchdog_thread_ = std::thread([this]() { _watchdog_loop(); });
     button_watchdog_->setEnabled(false);
     label_watchdog_->setText(QString("<font color='#2e7d32'><b>Watchdog: running</b></font> (%1 s)")
-                                 .arg(configuration_.watchdog_period_in_seconds));
+                                 .arg(watchdog_period_in_seconds_));
     statusBar()->showMessage("Watchdog started.", 5000);
 }
 
 void MainWindow::_watchdog_loop()
 {
     // Ten triggers per period, so that a late one does not trip the watchdog.
-    const auto interval = std::chrono::duration<double>(configuration_.watchdog_period_in_seconds/10.0);
+    // watchdog_period_in_seconds_ does not change once the thread runs (the slider is disabled).
+    const double period = watchdog_period_in_seconds_;
+    const auto interval = std::chrono::duration<double>(period/10.0);
     while (watchdog_running_)
     {
         for (const auto& client : watchdog_clients_)
         {
             try
             {
-                client->send_watchdog_trigger(true, configuration_.watchdog_period_in_seconds,
+                client->send_watchdog_trigger(true, period,
                                               configuration_.watchdog_maximum_acceptable_delay_in_seconds);
             }
             catch (const std::exception& e)

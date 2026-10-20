@@ -29,7 +29,7 @@ ros2 run sas_legged_client_window sas_legged_client_window --ros-args -p legged_
 | `own_driver_limb_prefixes` | `[]` | Limbs with their own driver, e.g. `['sas_z1/z1_1']` for the Z1 arm of a B1 |
 | `mode` | `control` | `control`: the window commands the robot. `monitor`: it only reads the robot (the command topics are not created), so that it can run next to the controller |
 | `max_vx`, `max_vy`, `max_wz` | `0.2`, `0.1`, `0.2` | Ranges of the twist sliders, in m/s and rad/s (conservative, for testing) |
-| `watchdog_period_in_seconds` | `1.0` | Period of the watchdog. The driver fixes it at the first trigger |
+| `watchdog_period_in_seconds` | `1.0` | Initial period of the watchdog, in the period slider (1 to 5 s, rounded) |
 | `watchdog_maximum_acceptable_delay_in_seconds` | `0.5` | Maximum acceptable delay of the triggers. The driver fixes it at the first trigger |
 
 The launch file has the same arguments, except the ranges of the twist sliders.
@@ -51,6 +51,8 @@ The launch file has the same arguments, except the ranges of the twist sliders.
   does not know the mode of the base, so it only accepts targets while its *Allow commands* box is checked. While a
   limb does not accept targets, its sliders follow the measured positions, so that the first drag starts from there.
 - `EMERGENCY STOP` sends the shutdown signal to the legged driver and to every limb with its own driver.
+- The period of the watchdog is chosen with its slider, from 1 to 5 s, before it starts: the driver fixes it at the
+  first trigger, so the slider is disabled once the watchdog runs.
 - `START WATCHDOG` (after a confirmation) sends watchdog triggers to the legged driver and to every limb with its own
   driver, ten per period, from their own thread. **It cannot be stopped**: when the window closes (or crashes), the
   triggers stop, and the drivers stop the robot. To watch a controller, run a second window in monitor mode and start
