@@ -1,5 +1,6 @@
 #include <sas_tools/sas_legged_robot_driver_ros.hpp>
 #include <sas_tools/rpy_conversions.hpp>
+#include <algorithm>
 #include <set>
 #include <stdexcept>
 
@@ -124,6 +125,11 @@ void LeggedRobotDriverROS::_send_info()
     info.min_base_yaw   = min_rpy(2);
     info.max_base_yaw   = max_rpy(2);
 
+    const auto [min_height, max_height, nominal_height] = _get_base_height_limits();
+    info.min_base_height     = min_height;
+    info.max_base_height     = max_height;
+    info.nominal_base_height = nominal_height;
+
     legged_server_.send_info(info);
 }
 
@@ -141,7 +147,7 @@ void LeggedRobotDriverROS::_legged_step(const LeggedRobotDriver::CommandAcceptan
     {
         const double base_height = legged_server_.get_target_base_height();
         if (acceptance.base_height)
-            legged_driver_->set_target_base_height(base_height);
+            legged_driver_->set_target_base_height(_clamp_base_height(base_height));
     }
     if (legged_server_.has_new_target_base_orientation())
     {
@@ -206,6 +212,25 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriverROS::_get_base_ori
     if ((std::get<0>(limits).array() > std::get<1>(limits).array()).any())
         throw std::invalid_argument("LeggedRobotDriverROS: get_base_orientation_limits() returned min > max.");
     return limits;
+}
+
+std::tuple<double, double, double> LeggedRobotDriverROS::_get_base_height_limits() const
+{
+    const auto limits = legged_driver_->get_base_height_limits();
+    const auto [min_height, max_height, nominal_height] = limits;
+    if (min_height > nominal_height || nominal_height > max_height)
+        throw std::invalid_argument("LeggedRobotDriverROS: get_base_height_limits() must return min <= nominal <= max.");
+    return limits;
+}
+
+double LeggedRobotDriverROS::_clamp_base_height(const double &base_height) const
+{
+    const auto [min_height, max_height, nominal_height] = _get_base_height_limits();
+    const double clamped = std::clamp(base_height, min_height, max_height);
+    if (clamped != base_height)
+        RCLCPP_WARN_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
+                                    "::The target base height was clamped to the limits of the robot.");
+    return clamped;
 }
 
 DQ LeggedRobotDriverROS::_clamp_base_orientation(const DQ &r) const

@@ -157,7 +157,8 @@ public:
      * @brief set_target_base_height Sets the desired base height with respect to the ground.
      * @param base_height Target height in meters
      * @note Only called in STANDING, if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT), and in WALKING,
-     *       if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING).
+     *       if is_supported(LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING), with the height already
+     *       clamped to get_base_height_limits().
      */
     virtual void set_target_base_height(const double& base_height) = 0;
 
@@ -266,6 +267,15 @@ public:
      * @return {min, max}, each as {roll, pitch, yaw}, with min <= max for every angle.
      */
     virtual std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;
+
+    /**
+     * @brief get_base_height_limits Returns the limits of set_target_base_height(), in meters above the
+     *        ground, and the height of the robot in its neutral pose. The default implementation returns
+     *        zeros, which is correct only for robots that support neither LEGGED_FUNCTIONALITY::BASE_HEIGHT
+     *        nor LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING.
+     * @return {min, max, nominal}, with min <= nominal <= max.
+     */
+    virtual std::tuple<double, double, double> get_base_height_limits() const;
 
 };
 

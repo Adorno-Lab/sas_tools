@@ -22,3 +22,10 @@ float64 min_base_pitch
 float64 max_base_pitch
 float64 min_base_yaw
 float64 max_base_yaw
+
+# Limits of set/target_base_height, in meters above the ground (the target is clamped to [min, max]), and the
+# height of the robot in its neutral pose. Zero when neither supports_base_height nor
+# supports_base_height_while_walking is true.
+float64 min_base_height
+float64 max_base_height
+float64 nominal_base_height
