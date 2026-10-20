@@ -47,7 +47,7 @@ struct ClientWindowConfiguration
     double max_vy{0.1};                                 ///< ... [-max_vy, max_vy] m/s, ...
     double max_wz{0.2};                                 ///< ... and [-max_wz, max_wz] rad/s.
     double watchdog_period_in_seconds{1.0};             ///< Initial position of the period slider (rounded to 1-5 s).
-    double watchdog_maximum_acceptable_delay_in_seconds{0.5};
+    double watchdog_maximum_acceptable_delay_in_seconds{1e30};
     // The emergency stop also publishes on this topic (e.g. the one of the emergency stop of the lab, to which the
     // launch files of the drivers remap their set/shutdown). Empty: only the set/shutdown of each driver.
     std::string shutdown_topic{"/sas/set/shutdown"};

@@ -23,7 +23,7 @@ def generate_launch_description():
         DeclareLaunchArgument('mode', default_value='control',
                               description='"control" (commands the robot) or "monitor" (only reads it).'),
         DeclareLaunchArgument('watchdog_period_in_seconds', default_value='1.0'),
-        DeclareLaunchArgument('watchdog_maximum_acceptable_delay_in_seconds', default_value='0.5'),
+        DeclareLaunchArgument('watchdog_maximum_acceptable_delay_in_seconds', default_value='1e30'),
         DeclareLaunchArgument('shutdown_topic', default_value='/sas/set/shutdown',
                               description='The emergency stop also publishes on it (empty string to disable).'),
         Node(
