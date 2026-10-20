@@ -250,6 +250,14 @@ public:
     std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_base_orientation_limits() const;
 
     /**
+     * @brief get_base_height_limits Returns the limits of the base height, as reported on get/info.
+     * @return {min, max, nominal}, in meters above the ground. Zero if the robot does not support the base
+     *         height.
+     * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/info was not received yet.
+     */
+    std::tuple<double, double, double> get_base_height_limits() const;
+
+    /**
      * @brief is_enabled Returns true once the client received get/info and get/status. Wait for it,
      *        while spinning the node, before calling the state getters. The base has no joints, so
      *        the joint states of the base are not required; the limbs have their own clients.

@@ -58,6 +58,8 @@ private:
     void _legged_step(const LeggedRobotDriver::CommandAcceptance& acceptance);
     void _limbs_step(const LeggedRobotDriver::CommandAcceptance& acceptance);
     std::tuple<Eigen::Vector3d, Eigen::Vector3d> _get_base_orientation_limits() const;
+    std::tuple<double, double, double> _get_base_height_limits() const;
+    double _clamp_base_height(const double& base_height) const;
     DQ _clamp_base_orientation(const DQ& r) const;
 
 public:

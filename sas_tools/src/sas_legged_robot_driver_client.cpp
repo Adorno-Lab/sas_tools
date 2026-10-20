@@ -241,6 +241,12 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriverClient::get_base_o
             Eigen::Vector3d(info_.max_base_roll, info_.max_base_pitch, info_.max_base_yaw)};
 }
 
+std::tuple<double, double, double> LeggedRobotDriverClient::get_base_height_limits() const
+{
+    _check_received(info_received_, "get/info", __FUNCTION__);
+    return {info_.min_base_height, info_.max_base_height, info_.nominal_base_height};
+}
+
 bool LeggedRobotDriverClient::is_enabled() const
 {
     return info_received_ && status_received_;

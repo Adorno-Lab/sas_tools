@@ -92,5 +92,10 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriver::get_base_orienta
     return {Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()};
 }
 
+std::tuple<double, double, double> LeggedRobotDriver::get_base_height_limits() const
+{
+    return {0.0, 0.0, 0.0};
+}
+
 
 }

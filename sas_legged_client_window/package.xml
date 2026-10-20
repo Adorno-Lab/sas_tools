@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>sas_legged_client_window</name>
+  <version>0.0.0</version>
+  <description>Qt window to monitor and command a legged robot driver of sas_tools (mode, twist, base pose, limbs), with an emergency stop and a watchdog. It uses LeggedRobotDriverClient and RobotDriverClient, so it works with any legged robot that follows the standard. Requires Qt 6 (qt6-base-dev).</description>
+  <maintainer email="juanjose.quirozomana@manchester.ac.uk">Juan Jose Quiroz Omana</maintainer>
+  <license>LGPL-2.1-only</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sas_core</depend>
+  <depend>sas_robot_driver</depend>
+  <depend>sas_tools</depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

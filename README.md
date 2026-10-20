@@ -11,13 +11,14 @@ uses `LeggedRobotDriverClient`, and works with any robot whose driver implements
 |---|---|
 | [sas_tools](sas_tools) | `LeggedRobotDriver` interface, `LeggedRobotDriverROS`, `LeggedRobotDriverServer`, `LeggedRobotDriverClient`, and RPY conversions |
 | [sas_legged_msgs](sas_legged_msgs) | Messages of the legged robot driver standard (`HighLevelMode`, `LeggedRobotStatus`, `LeggedRobotInfo`, `LimbInfo`) |
+| [sas_legged_client_window](sas_legged_client_window) | Qt window to monitor or command any legged robot driver of the standard, with an emergency stop and a watchdog (requires Qt 6) |
 
 ## Install
 
 Requires ROS 2 Jazzy, [DQ Robotics](https://github.com/dqrobotics/cpp), and the SmartArmStack packages
 `sas_core`, `sas_common` and `sas_robot_driver`.
 
-Clone the repository into the `src` folder of your workspace; `colcon build` finds both packages:
+Clone the repository into the `src` folder of your workspace; `colcon build` finds its packages:
 
 ```shell
 cd ~/ros2_ws/src
@@ -25,6 +26,10 @@ git clone https://github.com/Adorno-Lab/sas_tools
 cd ~/ros2_ws
 colcon build --packages-up-to sas_tools
 ```
+
+`sas_legged_client_window` also requires Qt 6 (`sudo apt install qt6-base-dev`). On computers without it (e.g. the
+onboard computer of a robot, or a Docker image without a display), skip it with
+`colcon build --packages-skip sas_legged_client_window`.
 
 ## Architecture
 
@@ -125,6 +130,8 @@ is accepted in `get/status`. The driver starts in `IDLE`.
 - The base height is supported separately in `STANDING` (`LEGGED_FUNCTIONALITY::BASE_HEIGHT`) and in `WALKING`
   (`LEGGED_FUNCTIONALITY::BASE_HEIGHT_WHILE_WALKING`), since some robots (e.g. the B1) only change their height
   while standing. Both are published in `get/info`.
+- The base height is in meters above the ground. `LeggedRobotDriverROS` clamps it to the limits of the robot
+  (`get_base_height_limits()`), which are published in `get/info` with the height of its neutral pose.
 - Each driver manages its own mode changes (e.g. stopping before switching from `WALKING` to `STANDING`).
 
 ### Base orientation
@@ -291,3 +298,5 @@ watchdog.send_watchdog_trigger(true, 1.0, 0.5);  // status, period, maximum acce
 ```
 
 Only the base prefix has a watchdog; a watchdog failure stops the whole robot, including its limbs.
+
+`sas_legged_client_window` in monitor mode can also be the watchdog (see its [README](sas_legged_client_window)).
