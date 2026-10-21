@@ -5,11 +5,37 @@ Starts the window of sas_legged_client_window for a legged robot driver of sas_t
     ros2 launch sas_legged_client_window sas_legged_client_window_launch.py legged_robot_prefix:=sas_g1/g1_1
     ros2 launch sas_legged_client_window sas_legged_client_window_launch.py mode:=monitor own_driver_limb_prefixes:="['sas_z1/z1_1']"
 """
+import yaml
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+
+
+def _start_window(context):
+    parameters = {
+        'legged_robot_prefix': ParameterValue(LaunchConfiguration('legged_robot_prefix'), value_type=str),
+        'mode': ParameterValue(LaunchConfiguration('mode'), value_type=str),
+        'watchdog_period_in_seconds': ParameterValue(LaunchConfiguration('watchdog_period_in_seconds'), value_type=float),
+        'watchdog_maximum_acceptable_delay_in_seconds':
+            ParameterValue(LaunchConfiguration('watchdog_maximum_acceptable_delay_in_seconds'), value_type=float),
+        'shutdown_topic': ParameterValue(LaunchConfiguration('shutdown_topic'), value_type=str),
+    }
+    # An empty list has no type in the parameter file, so the node would get no value and throw. It is only passed
+    # when it is not empty; otherwise, the node uses its default (an empty list).
+    own_driver_limb_prefixes = yaml.safe_load(LaunchConfiguration('own_driver_limb_prefixes').perform(context))
+    if own_driver_limb_prefixes:
+        parameters['own_driver_limb_prefixes'] = [str(prefix) for prefix in own_driver_limb_prefixes]
+
+    return [Node(
+        package='sas_legged_client_window',
+        executable='sas_legged_client_window',
+        name=LaunchConfiguration('node_name'),
+        output='screen',
+        parameters=[parameters]
+    )]
 
 
 def generate_launch_description():
@@ -26,19 +52,5 @@ def generate_launch_description():
         DeclareLaunchArgument('watchdog_maximum_acceptable_delay_in_seconds', default_value='1e30'),
         DeclareLaunchArgument('shutdown_topic', default_value='/sas/set/shutdown',
                               description='The emergency stop also publishes on it (empty string to disable).'),
-        Node(
-            package='sas_legged_client_window',
-            executable='sas_legged_client_window',
-            name=LaunchConfiguration('node_name'),
-            output='screen',
-            parameters=[{
-                'legged_robot_prefix': ParameterValue(LaunchConfiguration('legged_robot_prefix'), value_type=str),
-                'own_driver_limb_prefixes': ParameterValue(LaunchConfiguration('own_driver_limb_prefixes'), value_type=list[str]),
-                'mode': ParameterValue(LaunchConfiguration('mode'), value_type=str),
-                'watchdog_period_in_seconds': ParameterValue(LaunchConfiguration('watchdog_period_in_seconds'), value_type=float),
-                'watchdog_maximum_acceptable_delay_in_seconds':
-                    ParameterValue(LaunchConfiguration('watchdog_maximum_acceptable_delay_in_seconds'), value_type=float),
-                'shutdown_topic': ParameterValue(LaunchConfiguration('shutdown_topic'), value_type=str),
-            }]
-        ),
+        OpaqueFunction(function=_start_window),
     ])
