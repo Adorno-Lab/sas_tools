@@ -6,6 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/quaternion_stamped.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <sas_legged_msgs/msg/high_level_mode.hpp>
@@ -29,6 +30,7 @@ namespace sas
  *  Publishers:
  *   - \<prefix\>/get/imu                     sensor_msgs/Imu
  *   - \<prefix\>/get/twist                   geometry_msgs/TwistStamped (measured, body frame; only if supported)
+ *   - \<prefix\>/get/battery_state           sensor_msgs/BatteryState (only the percentage; only if supported)
  *   - \<prefix\>/get/status                  sas_legged_msgs/LeggedRobotStatus
  *   - \<prefix\>/get/info                    sas_legged_msgs/LeggedRobotInfo (transient_local)
  */
@@ -57,6 +59,7 @@ private:
 
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher_imu_;
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr publisher_measured_twist_;
+    rclcpp::Publisher<sensor_msgs::msg::BatteryState>::SharedPtr publisher_battery_state_;
     rclcpp::Publisher<sas_legged_msgs::msg::LeggedRobotStatus>::SharedPtr publisher_status_;
     rclcpp::Publisher<sas_legged_msgs::msg::LeggedRobotInfo>::SharedPtr publisher_info_;
 
@@ -162,6 +165,15 @@ public:
      * @param twist The twist angular + E_*linear, expressed in the body frame.
      */
     void send_measured_twist(const DQ& twist);
+
+    /**
+     * @brief send_battery_state Publishes the charge of the battery on get/battery_state. Only the percentage
+     *        is filled: the other measurements are NaN, as sensor_msgs/BatteryState specifies for the
+     *        unmeasured ones.
+     * @param percentage The state of charge, in percent ([0, 100]). It is published in [0, 1], the range of
+     *        sensor_msgs/BatteryState.
+     */
+    void send_battery_state(const double& percentage);
 
     /**
      * @brief send_status Publishes the current state of the driver on get/status.

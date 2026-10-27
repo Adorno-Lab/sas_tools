@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
@@ -16,6 +17,7 @@ struct LeggedRobotDriverROSConfiguration
 {
     RobotDriverROSConfiguration robot_driver_ros;
     double twist_timeout_sec{0.2}; ///< A zero twist is sent when no twist arrived within this time.
+    double battery_state_period_sec{1.0}; ///< Period of get/battery_state (the battery changes slowly).
 };
 
 /**
@@ -25,7 +27,8 @@ struct LeggedRobotDriverROSConfiguration
  * installs the control loop callback of the driver, which in every iteration:
  *   1. applies the new high-level mode and passes the commands accepted in the current mode
  *      to the driver (see LeggedRobotDriver::get_command_acceptance()),
- *   2. publishes get/imu and get/status (and get/info in the first iteration),
+ *   2. publishes get/imu and get/status (and get/info in the first iteration), get/twist if supported, and
+ *      get/battery_state if supported, once every battery_state_period_sec,
  *   3. steps one RobotDriverServer per LeggedRobotDriver::get_limbs() entry, under \<prefix\>/\<name\>,
  *      forwarding its targets only if the limb is commandable in the current mode,
  *   4. calls LeggedRobotDriver::extra_control_loop_step().
@@ -52,6 +55,8 @@ private:
     std::vector<Limb> limbs_;
     RobotDriverROS robot_driver_ros_;
     bool info_sent_{false};
+    bool battery_state_sent_{false};
+    std::chrono::steady_clock::time_point battery_state_time_point_;
 
     void _control_loop_step();
     void _send_info();
@@ -72,8 +77,8 @@ public:
      * @param legged_driver The driver. Its control loop callback is installed by control_loop().
      * @param configuration robot_driver_ros.robot_driver_provider_prefix is the topic prefix.
      * @param shutdown_signaler Shared with the driver and every RobotDriverROS loop.
-     * @throws std::invalid_argument for a null driver, a non-positive twist timeout, or an invalid
-     *         (empty, duplicated or null) limb entry.
+     * @throws std::invalid_argument for a null driver, a non-positive twist timeout or battery state period,
+     *         or an invalid (empty, duplicated or null) limb entry.
      */
     LeggedRobotDriverROS(const std::shared_ptr<rclcpp::Node>& node,
                          const std::shared_ptr<LeggedRobotDriver>& legged_driver,

@@ -27,6 +27,7 @@ LeggedRobotDriverServer::LeggedRobotDriverServer(const std::shared_ptr<rclcpp::N
 
     publisher_imu_ = node_->create_publisher<sensor_msgs::msg::Imu>(topic_prefix_ + "/get/imu", 1);
     publisher_measured_twist_ = node_->create_publisher<geometry_msgs::msg::TwistStamped>(topic_prefix_ + "/get/twist", 1);
+    publisher_battery_state_ = node_->create_publisher<sensor_msgs::msg::BatteryState>(topic_prefix_ + "/get/battery_state", 1);
     publisher_status_ = node_->create_publisher<sas_legged_msgs::msg::LeggedRobotStatus>(topic_prefix_ + "/get/status", 1);
     publisher_info_ = node_->create_publisher<sas_legged_msgs::msg::LeggedRobotInfo>(
         topic_prefix_ + "/get/info", rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local());
@@ -144,6 +145,25 @@ void LeggedRobotDriverServer::send_measured_twist(const DQ &twist)
     msg.twist.linear.y = v(4);
     msg.twist.linear.z = v(5);
     publisher_measured_twist_->publish(msg);
+}
+
+void LeggedRobotDriverServer::send_battery_state(const double &percentage)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    sensor_msgs::msg::BatteryState msg;
+    msg.header.stamp = node_->get_clock()->now();
+    msg.voltage = nan;
+    msg.temperature = nan;
+    msg.current = nan;
+    msg.charge = nan;
+    msg.capacity = nan;
+    msg.design_capacity = nan;
+    msg.percentage = percentage/100.0;
+    msg.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_UNKNOWN;
+    msg.power_supply_health = sensor_msgs::msg::BatteryState::POWER_SUPPLY_HEALTH_UNKNOWN;
+    msg.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+    msg.present = true;
+    publisher_battery_state_->publish(msg);
 }
 
 void LeggedRobotDriverServer::send_imu(const DQ &orientation, const DQ &angular_velocity, const DQ &linear_acceleration)

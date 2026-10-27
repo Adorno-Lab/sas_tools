@@ -1,5 +1,6 @@
 #include <sas_tools/LeggedRobotDriver.hpp>
 #include <algorithm>
+#include <limits>
 #include <stdexcept>
 
 namespace sas
@@ -95,6 +96,11 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> LeggedRobotDriver::get_base_orienta
 DQ LeggedRobotDriver::get_measured_twist()
 {
     return DQ(0);
+}
+
+double LeggedRobotDriver::get_battery_percentage()
+{
+    return std::numeric_limits<double>::quiet_NaN();
 }
 
 std::tuple<double, double, double> LeggedRobotDriver::get_base_height_limits() const

@@ -158,6 +158,7 @@ private:
     QLabel* label_gyroscope_{nullptr};
     QLabel* label_accelerometer_{nullptr};
     QLabel* label_measured_twist_{nullptr};
+    QLabel* label_battery_{nullptr};
 
     QGridLayout* layout_limbs_{nullptr};
     QPushButton* button_emergency_stop_{nullptr};
@@ -196,6 +197,7 @@ private:
     void _update_status();
     void _update_mode();
     void _update_imu();
+    void _update_battery();
     void _create_legged_limbs();
     void _update_limbs();
     void _update_elapsed_time();
