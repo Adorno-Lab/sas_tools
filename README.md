@@ -61,6 +61,7 @@ Base topics, under `<prefix>/`:
 | `get/status` | `sas_legged_msgs/LeggedRobotStatus` | server → client | `JOINT_MONITORING` |
 | `get/imu` | `sensor_msgs/Imu` | server → client | `JOINT_MONITORING` |
 | `get/twist` | `geometry_msgs/TwistStamped` | server → client | `JOINT_MONITORING` |
+| `get/battery_state` | `sensor_msgs/BatteryState` | server → client | `JOINT_MONITORING` |
 | `set/high_level_mode` | `sas_legged_msgs/HighLevelMode` | client → server | `JOINT_CONTROL` |
 | `set/target_twist` | `geometry_msgs/TwistStamped` | client → server | `JOINT_CONTROL` |
 | `set/target_base_height` | `std_msgs/Float64` | client → server | `JOINT_CONTROL` |
@@ -151,6 +152,14 @@ locomotion controller), in the body frame. It is optional: only robots that supp
 `LEGGED_FUNCTIONALITY::MEASURED_TWIST` (`supports_measured_twist` in `get/info`) publish it. Unlike `get/imu`, it
 includes the linear velocity of the base, which a pose estimator cannot obtain by integrating the accelerometer.
 
+### Battery
+
+`get/battery_state` reports the charge of the battery. It is optional: only robots that support
+`LEGGED_FUNCTIONALITY::BATTERY` (`supports_battery` in `get/info`) publish it, about once per second
+(`battery_state_period_sec` of `LeggedRobotDriverROSConfiguration`), and only once the robot has a reading. Only
+`percentage` is filled, in [0, 1] as in `sensor_msgs/BatteryState`; the other measurements are NaN.
+`LeggedRobotDriverClient::get_battery_percentage()` returns it in percent.
+
 ## Usage
 
 ### Writing a driver
@@ -202,7 +211,9 @@ Optional overrides:
 | Method | Default | Override it when |
 |---|---|---|
 | `get_base_orientation_limits()` | zeros | the robot supports `BASE_ORIENTATION` |
-| `extra_control_loop_step()` | no-op | the robot publishes extra data (e.g. the B1 battery) |
+| `get_measured_twist()` | `DQ(0)` | the robot supports `MEASURED_TWIST` |
+| `get_battery_percentage()` | NaN | the robot supports `BATTERY` (return NaN until the first reading, do not throw) |
+| `extra_control_loop_step()` | no-op | the robot needs extra work in every iteration of the control loop |
 
 > [!IMPORTANT]
 > Set the joint limits of each limb driver (`set_joint_limits()`). The SAS `RobotDriverClient::is_enabled()`
