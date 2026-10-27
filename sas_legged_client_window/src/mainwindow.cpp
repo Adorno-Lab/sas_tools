@@ -302,13 +302,14 @@ QGroupBox *MainWindow::_build_base_pose_group()
 
 QGroupBox *MainWindow::_build_imu_group()
 {
-    auto group = new QGroupBox("Base state (get/imu, get/twist)", this);
+    auto group = new QGroupBox("Base state (get/imu, get/twist, get/battery_state)", this);
     auto layout = new QGridLayout(group);
     label_quaternion_ = new QLabel("-", group);
     label_rpy_ = new QLabel("-", group);
     label_gyroscope_ = new QLabel("-", group);
     label_accelerometer_ = new QLabel("-", group);
     label_measured_twist_ = new QLabel("-", group);
+    label_battery_ = new QLabel("-", group);
     layout->addWidget(new QLabel("Orientation (w, x, y, z):", group), 0, 0);
     layout->addWidget(label_quaternion_, 0, 1);
     layout->addWidget(new QLabel("Roll, pitch, yaw (deg):", group), 1, 0);
@@ -319,6 +320,8 @@ QGroupBox *MainWindow::_build_imu_group()
     layout->addWidget(label_accelerometer_, 3, 1);
     layout->addWidget(new QLabel("Measured twist (vx, vy, wz):", group), 4, 0);
     layout->addWidget(label_measured_twist_, 4, 1);
+    layout->addWidget(new QLabel("Battery:", group), 5, 0);
+    layout->addWidget(label_battery_, 5, 1);
     layout->setColumnStretch(1, 1);
     return group;
 }
@@ -423,6 +426,7 @@ void MainWindow::_update()
     step([this]() { _update_mode(); });
     step([this]() { _send_target_twist(); });
     step([this]() { _update_imu(); });
+    step([this]() { _update_battery(); });
     step([this]() { _create_legged_limbs(); });
     step([this]() { _update_limbs(); });
     step([this]() { _update_elapsed_time(); });
@@ -581,6 +585,27 @@ void MainWindow::_update_imu()
     catch (const std::runtime_error&)
     {
         label_measured_twist_->setText("-");  // Nothing received on get/twist yet.
+    }
+}
+
+void MainWindow::_update_battery()
+{
+    if (!legged_client_->is_enabled())
+        return;
+
+    // Optional: only robots that support LEGGED_FUNCTIONALITY::BATTERY publish get/battery_state.
+    if (!legged_client_->is_supported(sas::LeggedRobotDriver::LEGGED_FUNCTIONALITY::BATTERY))
+    {
+        label_battery_->setText("not supported");
+        return;
+    }
+    try
+    {
+        label_battery_->setText(_format(legged_client_->get_battery_percentage(), 0) + " %");
+    }
+    catch (const std::runtime_error&)
+    {
+        label_battery_->setText("-");  // Nothing received on get/battery_state yet.
     }
 }
 
