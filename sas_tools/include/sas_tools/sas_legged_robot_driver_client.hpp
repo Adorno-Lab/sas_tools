@@ -6,6 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/quaternion_stamped.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <sas_legged_msgs/msg/high_level_mode.hpp>
@@ -23,7 +24,8 @@ namespace sas
  *        the same MODE_BLACKLIST_FLAG:
  *   - JOINT_CONTROL also creates the legged command publishers (twist, mode, base height and
  *     orientation). Only one client per robot may use it.
- *   - JOINT_MONITORING also creates the legged state subscriptions (get/imu, get/twist, get/status, get/info).
+ *   - JOINT_MONITORING also creates the legged state subscriptions (get/imu, get/twist, get/battery_state,
+ *     get/status, get/info).
  *   - WATCHDOG_CONTROL is unchanged (set/watchdog_trigger). Only one client per robot may use it.
  *
  * Methods of a blacklisted mode throw std::runtime_error, as in RobotDriverClient.
@@ -54,6 +56,10 @@ private:
     DQ measured_twist_{0};
     bool measured_twist_received_{false};
 
+    rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr subscriber_battery_state_;
+    double battery_percentage_{0.0};
+    bool battery_state_received_{false};
+
     rclcpp::Subscription<sas_legged_msgs::msg::LeggedRobotStatus>::SharedPtr subscriber_status_;
     sas_legged_msgs::msg::LeggedRobotStatus status_;
     bool status_received_{false};
@@ -70,6 +76,7 @@ private:
 
     void _callback_imu(const sensor_msgs::msg::Imu& msg);
     void _callback_measured_twist(const geometry_msgs::msg::TwistStamped& msg);
+    void _callback_battery_state(const sensor_msgs::msg::BatteryState& msg);
     void _callback_status(const sas_legged_msgs::msg::LeggedRobotStatus& msg);
     void _callback_info(const sas_legged_msgs::msg::LeggedRobotInfo& msg);
 
@@ -169,6 +176,14 @@ public:
      * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/twist was not received yet.
      */
     DQ get_measured_twist() const;
+
+    /**
+     * @brief get_battery_percentage Returns the latest charge of the battery reported on get/battery_state (only
+     *        published by robots that support LEGGED_FUNCTIONALITY::BATTERY, about once per second).
+     * @return The state of charge, in percent ([0, 100]).
+     * @throws std::runtime_error if JOINT_MONITORING is blacklisted or get/battery_state was not received yet.
+     */
+    double get_battery_percentage() const;
 
     /**
      * @brief get_high_level_mode Returns the current mode of the robot, as reported on get/status.

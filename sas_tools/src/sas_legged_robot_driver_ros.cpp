@@ -1,6 +1,7 @@
 #include <sas_tools/sas_legged_robot_driver_ros.hpp>
 #include <sas_tools/rpy_conversions.hpp>
 #include <algorithm>
+#include <cmath>
 #include <set>
 #include <stdexcept>
 
@@ -24,6 +25,8 @@ const LeggedRobotDriverROSConfiguration& _check_configuration(const LeggedRobotD
         throw std::invalid_argument("LeggedRobotDriverROS: robot_driver_ros.robot_driver_provider_prefix is empty.");
     if (!(configuration.twist_timeout_sec > 0.0))
         throw std::invalid_argument("LeggedRobotDriverROS: twist_timeout_sec must be positive.");
+    if (!(configuration.battery_state_period_sec > 0.0))
+        throw std::invalid_argument("LeggedRobotDriverROS: battery_state_period_sec must be positive.");
     return configuration;
 }
 
@@ -117,6 +120,7 @@ void LeggedRobotDriverROS::_send_info()
     info.supports_base_orientation = legged_driver_->is_supported(F::BASE_ORIENTATION);
     info.supports_base_height_while_walking = legged_driver_->is_supported(F::BASE_HEIGHT_WHILE_WALKING);
     info.supports_measured_twist = legged_driver_->is_supported(F::MEASURED_TWIST);
+    info.supports_battery = legged_driver_->is_supported(F::BATTERY);
 
     const auto [min_rpy, max_rpy] = _get_base_orientation_limits();
     info.min_base_roll  = min_rpy(0);
@@ -165,6 +169,24 @@ void LeggedRobotDriverROS::_legged_step(const LeggedRobotDriver::CommandAcceptan
 
     if (legged_driver_->is_supported(LeggedRobotDriver::LEGGED_FUNCTIONALITY::MEASURED_TWIST))
         legged_server_.send_measured_twist(legged_driver_->get_measured_twist());
+
+    // The battery changes slowly, so it is published once every battery_state_period_sec, and only once the
+    // driver has a reading (NaN before).
+    if (legged_driver_->is_supported(LeggedRobotDriver::LEGGED_FUNCTIONALITY::BATTERY))
+    {
+        const auto now = std::chrono::steady_clock::now();
+        if (!battery_state_sent_ ||
+            std::chrono::duration<double>(now - battery_state_time_point_).count() >= configuration_.battery_state_period_sec)
+        {
+            const double percentage = legged_driver_->get_battery_percentage();
+            if (std::isfinite(percentage))
+            {
+                legged_server_.send_battery_state(percentage);
+                battery_state_sent_ = true;
+                battery_state_time_point_ = now;
+            }
+        }
+    }
 
     legged_server_.send_status(legged_driver_->get_high_level_mode(), acceptance);
 }

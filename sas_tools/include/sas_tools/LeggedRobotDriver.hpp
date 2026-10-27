@@ -58,6 +58,7 @@ public:
         BASE_ORIENTATION,           ///< The base orientation can be commanded in STANDING.
         BASE_HEIGHT_WHILE_WALKING,  ///< The base height can also be commanded in WALKING.
         MEASURED_TWIST,             ///< The robot measures the twist of its base (see get_measured_twist()).
+        BATTERY,                    ///< The robot reports the charge of its battery (see get_battery_percentage()).
     };
 
     /**
@@ -211,6 +212,16 @@ public:
      *       returns DQ(0), which is correct only for robots that do not support it.
      */
     virtual DQ get_measured_twist();
+
+    /**
+     * @brief get_battery_percentage Returns the last reported state of charge of the battery. It is a state
+     *        reading, valid in every mode, like the IMU.
+     * @return The state of charge, in percent ([0, 100]), or NaN while no reading is available yet. It must not
+     *         throw while no reading is available: an exception ends the control loop of LeggedRobotDriverROS.
+     * @note Only called if is_supported(LEGGED_FUNCTIONALITY::BATTERY). The default implementation returns NaN,
+     *       which is correct only for robots that do not support it.
+     */
+    virtual double get_battery_percentage();
 
     // --- High-level mode ---
 
